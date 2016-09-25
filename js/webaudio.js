@@ -212,7 +212,7 @@ app.ports.raindropPort.subscribe(function (args) {
 //}
 
 if (typeof(timerWorker) == "undefined") {
-    timerWorker = new Worker('timerWorker.js');
+    timerWorker = new Worker('js/timerWorker.js');
 }
 timerWorker.postMessage(1000./40);
 //timerWorker.postMessage(schedulingInterval);
