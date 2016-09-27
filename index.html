@@ -1,15 +1,19 @@
 <html>
-    <head></head>
+    <head>
+        <script src="js/rainmask.js"></script>
+    </head>
     <body>
         <div>
             <debug id="debug1"></thing>
         </div>
+        <div id="elm_app"></div>
         <div>
-            <script src="js/rainmask.js"></script>
-            <script>
-                var app = Elm.Main.fullscreen()
-            </script>
-            <script src="js/webaudio.js"></script>
+            <a href="http://www.github.com/rskew/rainmask.com" target="_blank">Source</a>
         </div>
     </body>
+    <script>
+        var appDiv = document.getElementById("elm_app"),
+            app = Elm.Main.embed(appDiv);
+    </script>
+        <script src="js/webaudio.js"></script>
 </html>
