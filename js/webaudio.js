@@ -128,41 +128,42 @@ function newDrop (startTime, decayTime, pan) {
 }
 
 
-app.ports.backgroundNoisePort.subscribe(function (args) {
-    var backgroundNoiseIntensity = args[0];
-    backgroundNoiseGain.gain.setTargetAtTime(backgroundNoiseIntensity,
+app.ports.backgroundNoiseLevelPort.subscribe(function (backgroundNoiseLevel) {
+    //var backgroundNoiseLevel = args[0];
+    backgroundNoiseGain.gain.setTargetAtTime(backgroundNoiseLevel,
                                        audioContext.currentTime,
                                        0.2);
 });
 
 
-app.ports.togglePort.subscribe(function (args) {
-    if (masterGain.gain.value > 0.5) {
-        masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.005);
-    } else {
+app.ports.togglePort.subscribe(function (turnOnOrOff) {
+    //if (masterGain.gain.value > 0.5) {
+    if (turnOnOrOff) {
         masterGain.gain.setTargetAtTime(1, audioContext.currentTime, 0.005);
+    } else {
+        masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.005);
     }
 });
 
 
-app.ports.dryLevelPort.subscribe(function (args) {
-    var dryLevel = args[0];
+app.ports.dropLevelPort.subscribe(function (dryLevel) {
+    //var dryLevel = args[0];
     dryGain.gain.setTargetAtTime(dryLevel,
                                  audioContext.currentTime,
                                  0.2);
 });
 
 
-app.ports.reverbLevelPort.subscribe(function (args) {
-    var reverbLevel = args[0];
+app.ports.reverbLevelPort.subscribe(function (reverbLevel) {
+    //var reverbLevel = args[0];
     wetGain.gain.setTargetAtTime(reverbLevel,
                                  audioContext.currentTime,
                                  0.2);
 });
 
 
-app.ports.masterVolumePort.subscribe(function (args) {
-    var masterVolume = args[0];
+app.ports.masterVolumePort.subscribe(function (masterVolume) {
+    //var masterVolume = args[0];
     mainBusGain.gain.setTargetAtTime(masterVolume,
                                      audioContext.currentTime,
                                      0.2);
@@ -171,8 +172,9 @@ app.ports.masterVolumePort.subscribe(function (args) {
 
 //var nextDrop = {decayTime : 1, pan : {x : 1, y : 1, z : 1}};
 app.ports.raindropPort.subscribe(function (args) {
-    var decayTime = args[0];
-    var pan = args[1];
+    var startTime = args[0];
+    var decayTime = args[1];
+    var pan = args[2];
 
     newDrop (audioContext.currentTime, decayTime, pan);
     //nextDrop.decayTime = decayTime;
@@ -190,9 +192,10 @@ app.ports.raindropPort.subscribe(function (args) {
 //    schedulingInterval = 5;
 //
 //function scheduleDrop() {
-//    var startTime = nextDropTime;
+//    //var startTime = nextDropTime;
 //
-//    newDrop (startTime, nextDrop.decayTime, nextDrop.pan);
+//    //newDrop (startTime, nextDrop.decayTime, nextDrop.pan);
+//    app.ports.getNotePort.send(nextDropTime)
 //
 //    currentDropTime = startTime;
 //};
@@ -218,13 +221,14 @@ timerWorker.postMessage(1000./40);
 //timerWorker.postMessage(schedulingInterval);
 timerWorker.addEventListener('message', function (e) {
     //document.getElementById("thing2").innerHTML = e.data;
-    app.ports.timerPort.send('tick');
+    app.ports.timerPort.send(audioContext.currentTime);
     //scheduler();
 });
 
 
-app.ports.setTimerPort.subscribe(function (args) {
-    var time = args[0];
+app.ports.setTimerPort.subscribe(function (intensity) {
+    //var time = args[0];
+    var time = 1000. / intensity;
     timerWorker.postMessage(time);
     //interArrivalTime = time;
 });

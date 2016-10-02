@@ -1,26 +1,26 @@
-port module Cmds exposing (raindropPort
+port module Cmds exposing ( raindropPort
                           , setTimerPort
-                          , backgroundNoisePort
+                          , backgroundNoiseLevelPort
                           , togglePort
-                          , dryLevelPort
+                          , dropLevelPort
                           , reverbLevelPort
                           , masterVolumePort
                           )
 
-import Model exposing (Vector3)
+import Utils exposing ( Vector3
+                      , Time
+                      )
 
-port raindropPort : (Float, Vector3) -> Cmd msg
+port raindropPort : (Time, Float, Vector3) -> Cmd msg
 
-port setTimerPort : (List Float) -> Cmd msg
+port setTimerPort : Float -> Cmd msg
 
-port backgroundNoisePort : (List Float) -> Cmd msg
+port backgroundNoiseLevelPort : Float -> Cmd msg
 
-port togglePort : (List Bool) -> Cmd msg
+port dropLevelPort : Float -> Cmd msg
 
-port dryLevelPort : (List Float) -> Cmd msg
+port reverbLevelPort : Float -> Cmd msg
 
-port reverbLevelPort : (List Float) -> Cmd msg
+port masterVolumePort : Float -> Cmd msg
 
-port masterVolumePort : (List Float) -> Cmd msg
-
--- init : Float -> (List Float) -> (List Float) -> 
+port togglePort : Bool -> Cmd msg

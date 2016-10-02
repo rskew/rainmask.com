@@ -1,6 +1,6 @@
 module RainParams exposing (..)
 
-import Model exposing (Vector3)
+import Utils exposing (Vector3)
 
 import Random
 
