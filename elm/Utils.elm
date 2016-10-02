@@ -1,8 +1,11 @@
 module Utils exposing ( Vector3
-                      , Time
+                      , WATime
+                      , JSTime
                       )
 
-type alias Time = Float
+type alias WATime = Float
+
+type alias JSTime = Float
 
 
 type alias Vector3 =

@@ -8,10 +8,11 @@ port module Cmds exposing ( raindropPort
                           )
 
 import Utils exposing ( Vector3
-                      , Time
+                      , WATime
+                      , JSTime
                       )
 
-port raindropPort : (Time, Float, Vector3) -> Cmd msg
+port raindropPort : (WATime, Float, Vector3) -> Cmd msg
 
 port setTimerPort : Float -> Cmd msg
 

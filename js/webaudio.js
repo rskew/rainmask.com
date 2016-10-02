@@ -176,9 +176,12 @@ app.ports.raindropPort.subscribe(function (args) {
     var decayTime = args[1];
     var pan = args[2];
 
-    newDrop (audioContext.currentTime, decayTime, pan);
+    //newDrop (audioContext.currentTime, decayTime, pan);
+    newDrop (startTime, decayTime, pan);
+    document.getElementById("debug1").innerHTML = startTime;
     //nextDrop.decayTime = decayTime;
     //nextDrop.pan = pan;
+    //document.getElementById("debug2").innerHTML = audioContext.currentTime;
 });
 
 
@@ -217,18 +220,19 @@ app.ports.raindropPort.subscribe(function (args) {
 if (typeof(timerWorker) == "undefined") {
     timerWorker = new Worker('js/timerWorker.js');
 }
-timerWorker.postMessage(1000./40);
+timerWorker.postMessage(1000./4);
 //timerWorker.postMessage(schedulingInterval);
 timerWorker.addEventListener('message', function (e) {
     //document.getElementById("thing2").innerHTML = e.data;
     app.ports.timerPort.send(audioContext.currentTime);
+    document.getElementById("debug2").innerHTML = audioContext.currentTime;
     //scheduler();
 });
 
 
-app.ports.setTimerPort.subscribe(function (intensity) {
+app.ports.setTimerPort.subscribe(function (time) {
     //var time = args[0];
-    var time = 1000. / intensity;
+    //var time = 1000. / intensity;
     timerWorker.postMessage(time);
     //interArrivalTime = time;
 });

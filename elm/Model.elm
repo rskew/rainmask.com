@@ -5,6 +5,7 @@ module Model exposing ( Model
 
 import Cmds
 import Slider
+import Utils exposing (WATime)
 
   
 type alias Sliders =
@@ -19,6 +20,7 @@ type alias Sliders =
 type alias Model =
   { sliders : Sliders
   , on : Bool
+  , nextDropTime : WATime
   }
 
 --init : ( Model, Cmd msg )

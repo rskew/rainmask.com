@@ -8,7 +8,8 @@ import Model exposing ( Model
                       , Sliders
                       )
 import Utils exposing ( Vector3
-                      , Time
+                      , WATime
+                      , JSTime
                       )
 import Cmds exposing ( raindropPort
                      , setTimerPort
@@ -20,10 +21,12 @@ import Cmds exposing ( raindropPort
                      )
 import RainParams exposing (randVector3Gen)
 import Slider
+import Schedule
 
 import String exposing (toFloat)
 import Random
-import Focus
+import Update.Extra exposing (sequence)
+import List
 
 
 type SliderMsg
@@ -35,29 +38,45 @@ type SliderMsg
   | MasterVolume            Slider.Msg
 
 type Msg
-  = Drop Time Vector3
-  | GenerateDrop Time
+  = Drop WATime Vector3
+  | GenerateDrop WATime
+  | ScheduleDrops WATime
   | SliderChange SliderMsg
   | ToggleOnOff
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Drop time pan ->
+    Drop startTime pan ->
       ( model
       , if model.on then
-          raindropPort ( time
+          raindropPort ( startTime
                        , model.sliders.decayTime.value
                        , pan
+                       --, { x = 0, y = 0, z = 3}
                        )
         else
           Cmd.none
       )
 
-    GenerateDrop time ->
+    GenerateDrop tickTime ->
       ( model
-      , Random.generate (Drop time) randVector3Gen
+      , Random.generate (Drop tickTime) randVector3Gen
       )
+
+    ScheduleDrops timerTick ->
+      let
+        drops = List.map GenerateDrop <|
+                    Schedule.drops timerTick model.nextDropTime model
+        nextDrop = case List.head drops of
+                     Just (GenerateDrop startTime) ->
+                       startTime
+                     _ ->
+                       timerTick
+      in
+        sequence update drops ( { model | nextDropTime = nextDrop }
+                              , Cmd.none
+                              )
 
     ToggleOnOff ->
       if model.on == True then
@@ -153,12 +172,14 @@ init =
                           , value = 60
                           , max = 200
                           , min = 1
-                          , updateCommand = Cmds.setTimerPort
+                          --, updateCommand = Cmds.setTimerPort
+                          , updateCommand = \n -> Cmd.none
                           , quant = True
                           }
     ( backgroundNoiseLevelSlider, backgroundNoiseLevelInitCmd ) =
         Slider.initialise { name = "Background Noise Level"
-                          , value = 0.17
+                          --, value = 0.17
+                          , value = 0
                           , max = 1
                           , min = 0
                           , updateCommand = Cmds.backgroundNoiseLevelPort
@@ -197,7 +218,8 @@ init =
         , reverbLevel = reverbLevelSlider
         , masterVolume = masterVolumeSlider
         }
-      True
+        True
+        0
     , Cmd.batch <| List.map (Cmd.map SliderChange)
                       [ Cmd.map DecayTime decayTimeInitCmd
                       , Cmd.map RainIntensity rainIntensityInitCmd
@@ -205,5 +227,7 @@ init =
                       , Cmd.map DropLevel dropLevelInitCmd
                       , Cmd.map ReverbLevel reverbLevelInitCmd
                       , Cmd.map MasterVolume masterVolumeInitCmd
+                      -- initialise timer
+                      , setTimerPort Schedule.interval
                       ]
     )
