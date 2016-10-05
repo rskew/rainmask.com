@@ -10,6 +10,11 @@ import Utils exposing ( WATime
 
 port timerPort : (JSTime -> msg) -> Sub msg
 
+port visibilityPort : (Bool -> msg) -> Sub msg
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  timerPort ScheduleDrops 
+  Sub.batch
+    [ timerPort ScheduleDrops
+    , visibilityPort VisibilityChange
+    ]

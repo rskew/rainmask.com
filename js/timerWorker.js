@@ -5,7 +5,7 @@ self.addEventListener('message', function (e) {
     time = e.data;
     clearInterval(interval);
     interval = setInterval(function () {
-        self.postMessage(count);
+        self.postMessage([count, time]);
         count += 1;
     }, time);
 });

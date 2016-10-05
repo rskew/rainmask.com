@@ -1,6 +1,7 @@
 module Utils exposing ( Vector3
                       , WATime
                       , JSTime
+                      , unfoldr
                       )
 
 type alias WATime = Float
@@ -13,3 +14,11 @@ type alias Vector3 =
   , y : Float
   , z : Float
   }
+
+
+unfoldr : (b -> Maybe (a,b)) -> b -> List a
+unfoldr f b =
+    let unfoldr' z f b = case f b of
+        Nothing     -> z
+        Just (a,b') -> unfoldr' (a::z) f b'
+    in List.reverse <| unfoldr' [] f b
