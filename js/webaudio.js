@@ -1,4 +1,37 @@
-var audioContext = new AudioContext()
+//var isIOS = false
+//if('webkitAudioContext' in window) {
+//    var audioContext = new webkitAudioContext();
+//    isIOS = true
+//} else {
+//    var audioContext = new AudioContext()
+//}
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var audioContext = new AudioContext();
+
+// IOS requires touch interaction to unmute sound
+window.addEventListener('touchstart', function() {
+
+
+    document.getElementById("debug1").innerHTML = 'Touch!';
+
+	// create empty buffer
+	//var buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate);
+	var source = audioContext.createBufferSource();
+	source.buffer = noiseBuffers[0];
+
+	// connect to output (your speakers)
+	source.connect(audioContext.destination);
+
+	// play the file
+    //source.loop = true;
+    //if (isIOS) {
+    //    source.noteOn();
+    //} else {
+	//    source.start(0);
+    //}
+    source.noteOn(1);
+
+}, false);
 
 var masterGain = audioContext.createGain(1);
 masterGain.connect(audioContext.destination);
@@ -147,3 +180,4 @@ app.ports.setTimerPort.subscribe(function (time) {
 function visible (yesno) {
     app.ports.visibilityPort.send(yesno);
 };
+

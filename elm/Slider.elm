@@ -64,21 +64,34 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ div []
-        [ text <| model.name ++ " " ++ toString model.value
-        ]
-      , div []
-        [ input
-          [ type' "range"
-          , Html.Attributes.min "0"
-          , Html.Attributes.max <| toString sliderMax
-          --, value <| toString <| round <| scaleValToSlider model model.value
-          , value <| toString <| scaleValToSlider model model.value
-          , onInput UpdateValue
-          ] []
-        ]
-    ]
+  --let
+  --  sliderStyle =
+  --    [ ("position" , "absolute")
+  --    , ("left"     , toString quantVec.x ++ "px")
+  --    , ("top"     , toString (quantVec.y - 20) ++ "px")
+  --    ]
+  --  hashStyle =
+  --    [ ("position" , "absolute")
+  --    , ("left"     , toString quantVec.x ++ "px")
+  --    , ("top"     , toString (quantVec.y + 40) ++ "px")
+  --    ]
+  --in
+    div []
+      [ div []
+          [ text <| model.name ++ " " ++ toString model.value
+          ]
+        , div []
+          [ input
+            [ type' "range"
+            , Html.Attributes.min "0"
+            , Html.Attributes.max <| toString sliderMax
+            --, value <| toString <| round <| scaleValToSlider model model.value
+            , value <| toString <| scaleValToSlider model model.value
+            , onInput UpdateValue
+            ] []
+          ]
+        --, div []
+      ]
 
 sliderMax : Int
 sliderMax = 1000
