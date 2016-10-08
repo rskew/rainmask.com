@@ -12,7 +12,6 @@ import Utils exposing (IntVector2)
 import Html exposing (Html, div)
 import Html.App
 import Html.Attributes exposing (style)
-import Dict exposing (Dict)
 import Mouse exposing ( position
                       , ups
                       , downs
@@ -126,43 +125,6 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update sliderMsg model =
   case sliderMsg of
-    --DecayTime subMsg ->
-    --  updateSlider (.decayTime)
-    --               (\s m -> { model | decayTime = s })
-    --               model
-    --               subMsg
-
-    --RainIntensity subMsg ->
-    --  updateSlider (.rainIntensity)
-    --               (\s m -> { model | rainIntensity = s })
-    --               model
-    --               subMsg
-
-    --BackgroundNoiseLevel subMsg ->
-    --  updateSlider (.backgroundNoiseLevel)
-    --               (\s m -> { model | backgroundNoiseLevel = s })
-    --               model
-    --               subMsg
-
-    --DropLevel subMsg ->
-    --  updateSlider (.dropLevel)
-    --               (\s m -> { model | dropLevel = s })
-    --               model
-    --               subMsg
-
-    --ReverbLevel subMsg ->
-    --  updateSlider (.reverbLevel)
-    --               (\s m -> { model | reverbLevel = s })
-    --               model
-    --               subMsg
-
-    --MasterVolume subMsg ->
-    --  updateSlider (.masterVolume)
-    --               (\s m -> { model | masterVolume = s })
-    --               model
-    --               subMsg
-
-
     DecayTime subMsg ->
       let
         ( updatedSliderModel, sliderCmd ) =
@@ -242,40 +204,6 @@ update sliderMsg model =
 
 
 
---updateSlider : (Model -> Slider.Model) -> (Slider.Model -> Model -> Model)
---                    -> Model -> Slider.Msg -> (Model, Cmd Msg)
---updateSlider getter setter model subMsg =
---  let
---    ( updatedSliderModel, sliderCmd ) =
---        Slider.update subMsg <| getter model
---  in
---    ( setter updatedSliderModel model
---    , Cmd.map DecayTime sliderCmd
---    )
-
---  case (Dict.get key model) of
---    Just sliderModel ->
---      let
---        ( updatedSliderModel, sliderCmd ) =
---            Slider.update subMsg sliderModel
---      in
---        ( Dict.update key (updateSlidersDict updatedSliderModel) model
---        , Cmd.map MasterVolume sliderCmd
---        )
---    Nothing ->
---      -- this should really exit screaming
---      ( model
---      , Cmd.none
---      )
-  
-
---updateSlidersDict : Slider.Model -> Maybe Slider.Model -> Maybe Slider.Model
---updateSlidersDict newSlider thing =
---  case thing of
---    Nothing -> Nothing
---    Just slider -> Just newSlider
-
-
 -- VIEW
 
 view : Model -> Html Msg
@@ -285,39 +213,18 @@ view model =
   in
     div []
       [ div [ style <| sliderPositioning 0 (0*separation) ]
-          --[ Html.App.map DecayTime            <| Slider.view (Dict.get "decay" model) ]
           [ Html.App.map DecayTime              <| Slider.view model.decayTime ]
-          --(viewSlider DecayTime "decay" model)
       , div [ style <| sliderPositioning 0 (1* separation) ]
-          --[ Html.App.map RainIntensity        <| Slider.view (Dict.get "intensity" model) ]
           [ Html.App.map RainIntensity          <| Slider.view model.rainIntensity ]
-          --(viewSlider RainIntensity "intensity" model)
       , div [ style <| sliderPositioning 0 (2*separation) ]
-          --[ Html.App.map BackgroundNoiseLevel <| Slider.view (Dict.get "backgroundNoise" model) ]
           [ Html.App.map BackgroundNoiseLevel   <| Slider.view model.backgroundNoiseLevel ]
-          --(viewSlider BackgroundNoiseLevel "backgroundNoise" model)
       , div [ style <| sliderPositioning 0 (3*separation) ]
-          --[ Html.App.map DropLevel            <| Slider.view (Dict.get "dropLevel" model) ]
           [ Html.App.map DropLevel              <| Slider.view model.dropLevel ]
-          --(viewSlider DropLevel "dropLevel" model)
       , div [ style <| sliderPositioning 0 (4*separation) ]
-          --[ Html.App.map ReverbLevel          <| Slider.view (Dict.get "reverbLevel" model) ]
           [ Html.App.map ReverbLevel            <| Slider.view model.reverbLevel ]
-          --(viewSlider ReverbLevel "reverbLevel" model)
       , div [ style <| sliderPositioning 0 (5*separation) ]
-          --[ Html.App.map MasterVolume         <| Slider.view (Dict.get "masterVolume" model) ]
           [ Html.App.map MasterVolume           <| Slider.view model.masterVolume ]
-          --(viewSlider MasterVolume "masterVolume" model)
       ]
-
-
---viewSlider : (Slider.Msg -> Msg) -> String -> Model -> List (Html Msg)
---viewSlider msg key model =
---  case (Dict.get key model) of
---    Just sliderModel ->
---      [ Html.App.map msg <| Slider.view sliderModel ]
---    Nothing ->
---      []
 
 
 sliderPositioning : Int -> Int -> List (String, String)
