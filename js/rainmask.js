@@ -6326,6 +6326,10 @@ var _elm_lang$core$Json_Decode$dict = function (decoder) {
 };
 var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
+var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
+var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
+var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
+
 var _elm_lang$core$Random$onSelfMsg = F3(
 	function (_p1, _p0, seed) {
 		return _elm_lang$core$Task$succeed(seed);
@@ -6705,6 +6709,184 @@ var _elm_lang$core$Random$cmdMap = F2(
 			A2(_elm_lang$core$Random$map, func, _p79._0));
 	});
 _elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
+
+var _elm_lang$dom$Native_Dom = function() {
+
+function on(node)
+{
+	return function(eventName, decoder, toTask)
+	{
+		return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+
+			function performTask(event)
+			{
+				var result = A2(_elm_lang$core$Json_Decode$decodeValue, decoder, event);
+				if (result.ctor === 'Ok')
+				{
+					_elm_lang$core$Native_Scheduler.rawSpawn(toTask(result._0));
+				}
+			}
+
+			node.addEventListener(eventName, performTask);
+
+			return function()
+			{
+				node.removeEventListener(eventName, performTask);
+			};
+		});
+	};
+}
+
+var rAF = typeof requestAnimationFrame !== 'undefined'
+	? requestAnimationFrame
+	: function(callback) { callback(); };
+
+function withNode(id, doStuff)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		rAF(function()
+		{
+			var node = document.getElementById(id);
+			if (node === null)
+			{
+				callback(_elm_lang$core$Native_Scheduler.fail({ ctor: 'NotFound', _0: id }));
+				return;
+			}
+			callback(_elm_lang$core$Native_Scheduler.succeed(doStuff(node)));
+		});
+	});
+}
+
+
+// FOCUS
+
+function focus(id)
+{
+	return withNode(id, function(node) {
+		node.focus();
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function blur(id)
+{
+	return withNode(id, function(node) {
+		node.blur();
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+
+// SCROLLING
+
+function getScrollTop(id)
+{
+	return withNode(id, function(node) {
+		return node.scrollTop;
+	});
+}
+
+function setScrollTop(id, desiredScrollTop)
+{
+	return withNode(id, function(node) {
+		node.scrollTop = desiredScrollTop;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function toBottom(id)
+{
+	return withNode(id, function(node) {
+		node.scrollTop = node.scrollHeight;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function getScrollLeft(id)
+{
+	return withNode(id, function(node) {
+		return node.scrollLeft;
+	});
+}
+
+function setScrollLeft(id, desiredScrollLeft)
+{
+	return withNode(id, function(node) {
+		node.scrollLeft = desiredScrollLeft;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+function toRight(id)
+{
+	return withNode(id, function(node) {
+		node.scrollLeft = node.scrollWidth;
+		return _elm_lang$core$Native_Utils.Tuple0;
+	});
+}
+
+
+// SIZE
+
+function width(options, id)
+{
+	return withNode(id, function(node) {
+		switch (options.ctor)
+		{
+			case 'Content':
+				return node.scrollWidth;
+			case 'VisibleContent':
+				return node.clientWidth;
+			case 'VisibleContentWithBorders':
+				return node.offsetWidth;
+			case 'VisibleContentWithBordersAndMargins':
+				var rect = node.getBoundingClientRect();
+				return rect.right - rect.left;
+		}
+	});
+}
+
+function height(options, id)
+{
+	return withNode(id, function(node) {
+		switch (options.ctor)
+		{
+			case 'Content':
+				return node.scrollHeight;
+			case 'VisibleContent':
+				return node.clientHeight;
+			case 'VisibleContentWithBorders':
+				return node.offsetHeight;
+			case 'VisibleContentWithBordersAndMargins':
+				var rect = node.getBoundingClientRect();
+				return rect.bottom - rect.top;
+		}
+	});
+}
+
+return {
+	onDocument: F3(on(document)),
+	onWindow: F3(on(window)),
+
+	focus: focus,
+	blur: blur,
+
+	getScrollTop: getScrollTop,
+	setScrollTop: F2(setScrollTop),
+	getScrollLeft: getScrollLeft,
+	setScrollLeft: F2(setScrollLeft),
+	toBottom: toBottom,
+	toRight: toRight,
+
+	height: F2(height),
+	width: F2(width)
+};
+
+}();
+
+var _elm_lang$dom$Dom_LowLevel$onWindow = _elm_lang$dom$Native_Dom.onWindow;
+var _elm_lang$dom$Dom_LowLevel$onDocument = _elm_lang$dom$Native_Dom.onDocument;
 
 //import Native.Json //
 
@@ -8786,6 +8968,310 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _elm_lang$mouse$Mouse$onSelfMsg = F3(
+	function (router, _p0, state) {
+		var _p1 = _p0;
+		var _p2 = A2(_elm_lang$core$Dict$get, _p1.category, state);
+		if (_p2.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (tagger) {
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					tagger(_p1.position));
+			};
+			return A2(
+				_elm_lang$core$Task$andThen,
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p2._0.taggers)),
+				function (_p3) {
+					return _elm_lang$core$Task$succeed(state);
+				});
+		}
+	});
+var _elm_lang$mouse$Mouse_ops = _elm_lang$mouse$Mouse_ops || {};
+_elm_lang$mouse$Mouse_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p4) {
+				return t2;
+			});
+	});
+var _elm_lang$mouse$Mouse$init = _elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty);
+var _elm_lang$mouse$Mouse$categorizeHelpHelp = F2(
+	function (value, maybeValues) {
+		var _p5 = maybeValues;
+		if (_p5.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Just(
+				_elm_lang$core$Native_List.fromArray(
+					[value]));
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				A2(_elm_lang$core$List_ops['::'], value, _p5._0));
+		}
+	});
+var _elm_lang$mouse$Mouse$categorizeHelp = F2(
+	function (subs, subDict) {
+		categorizeHelp:
+		while (true) {
+			var _p6 = subs;
+			if (_p6.ctor === '[]') {
+				return subDict;
+			} else {
+				var _v4 = _p6._1,
+					_v5 = A3(
+					_elm_lang$core$Dict$update,
+					_p6._0._0,
+					_elm_lang$mouse$Mouse$categorizeHelpHelp(_p6._0._1),
+					subDict);
+				subs = _v4;
+				subDict = _v5;
+				continue categorizeHelp;
+			}
+		}
+	});
+var _elm_lang$mouse$Mouse$categorize = function (subs) {
+	return A2(_elm_lang$mouse$Mouse$categorizeHelp, subs, _elm_lang$core$Dict$empty);
+};
+var _elm_lang$mouse$Mouse$subscription = _elm_lang$core$Native_Platform.leaf('Mouse');
+var _elm_lang$mouse$Mouse$Position = F2(
+	function (a, b) {
+		return {x: a, y: b};
+	});
+var _elm_lang$mouse$Mouse$position = A3(
+	_elm_lang$core$Json_Decode$object2,
+	_elm_lang$mouse$Mouse$Position,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageX', _elm_lang$core$Json_Decode$int),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'pageY', _elm_lang$core$Json_Decode$int));
+var _elm_lang$mouse$Mouse$Watcher = F2(
+	function (a, b) {
+		return {taggers: a, pid: b};
+	});
+var _elm_lang$mouse$Mouse$Msg = F2(
+	function (a, b) {
+		return {category: a, position: b};
+	});
+var _elm_lang$mouse$Mouse$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var rightStep = F3(
+			function (category, taggers, task) {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					task,
+					function (state) {
+						return A2(
+							_elm_lang$core$Task$andThen,
+							_elm_lang$core$Process$spawn(
+								A3(
+									_elm_lang$dom$Dom_LowLevel$onDocument,
+									category,
+									_elm_lang$mouse$Mouse$position,
+									function (_p7) {
+										return A2(
+											_elm_lang$core$Platform$sendToSelf,
+											router,
+											A2(_elm_lang$mouse$Mouse$Msg, category, _p7));
+									})),
+							function (pid) {
+								return _elm_lang$core$Task$succeed(
+									A3(
+										_elm_lang$core$Dict$insert,
+										category,
+										A2(_elm_lang$mouse$Mouse$Watcher, taggers, pid),
+										state));
+							});
+					});
+			});
+		var bothStep = F4(
+			function (category, _p8, taggers, task) {
+				var _p9 = _p8;
+				return A2(
+					_elm_lang$core$Task$andThen,
+					task,
+					function (state) {
+						return _elm_lang$core$Task$succeed(
+							A3(
+								_elm_lang$core$Dict$insert,
+								category,
+								A2(_elm_lang$mouse$Mouse$Watcher, taggers, _p9.pid),
+								state));
+					});
+			});
+		var leftStep = F3(
+			function (category, _p10, task) {
+				var _p11 = _p10;
+				return A2(
+					_elm_lang$mouse$Mouse_ops['&>'],
+					_elm_lang$core$Process$kill(_p11.pid),
+					task);
+			});
+		return A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			oldState,
+			_elm_lang$mouse$Mouse$categorize(newSubs),
+			_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
+	});
+var _elm_lang$mouse$Mouse$MySub = F2(
+	function (a, b) {
+		return {ctor: 'MySub', _0: a, _1: b};
+	});
+var _elm_lang$mouse$Mouse$clicks = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'click', tagger));
+};
+var _elm_lang$mouse$Mouse$moves = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mousemove', tagger));
+};
+var _elm_lang$mouse$Mouse$downs = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mousedown', tagger));
+};
+var _elm_lang$mouse$Mouse$ups = function (tagger) {
+	return _elm_lang$mouse$Mouse$subscription(
+		A2(_elm_lang$mouse$Mouse$MySub, 'mouseup', tagger));
+};
+var _elm_lang$mouse$Mouse$subMap = F2(
+	function (func, _p12) {
+		var _p13 = _p12;
+		return A2(
+			_elm_lang$mouse$Mouse$MySub,
+			_p13._0,
+			function (_p14) {
+				return func(
+					_p13._1(_p14));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Mouse'] = {pkg: 'elm-lang/mouse', init: _elm_lang$mouse$Mouse$init, onEffects: _elm_lang$mouse$Mouse$onEffects, onSelfMsg: _elm_lang$mouse$Mouse$onSelfMsg, tag: 'sub', subMap: _elm_lang$mouse$Mouse$subMap};
+
+var _elm_lang$window$Native_Window = function()
+{
+
+var size = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)	{
+	callback(_elm_lang$core$Native_Scheduler.succeed({
+		width: window.innerWidth,
+		height: window.innerHeight
+	}));
+});
+
+return {
+	size: size
+};
+
+}();
+var _elm_lang$window$Window_ops = _elm_lang$window$Window_ops || {};
+_elm_lang$window$Window_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			t1,
+			function (_p0) {
+				return t2;
+			});
+	});
+var _elm_lang$window$Window$onSelfMsg = F3(
+	function (router, dimensions, state) {
+		var _p1 = state;
+		if (_p1.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var send = function (_p2) {
+				var _p3 = _p2;
+				return A2(
+					_elm_lang$core$Platform$sendToApp,
+					router,
+					_p3._0(dimensions));
+			};
+			return A2(
+				_elm_lang$window$Window_ops['&>'],
+				_elm_lang$core$Task$sequence(
+					A2(_elm_lang$core$List$map, send, _p1._0.subs)),
+				_elm_lang$core$Task$succeed(state));
+		}
+	});
+var _elm_lang$window$Window$init = _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+var _elm_lang$window$Window$size = _elm_lang$window$Native_Window.size;
+var _elm_lang$window$Window$width = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.width;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$height = A2(
+	_elm_lang$core$Task$map,
+	function (_) {
+		return _.height;
+	},
+	_elm_lang$window$Window$size);
+var _elm_lang$window$Window$onEffects = F3(
+	function (router, newSubs, oldState) {
+		var _p4 = {ctor: '_Tuple2', _0: oldState, _1: newSubs};
+		if (_p4._0.ctor === 'Nothing') {
+			if (_p4._1.ctor === '[]') {
+				return _elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing);
+			} else {
+				return A2(
+					_elm_lang$core$Task$andThen,
+					_elm_lang$core$Process$spawn(
+						A3(
+							_elm_lang$dom$Dom_LowLevel$onWindow,
+							'resize',
+							_elm_lang$core$Json_Decode$succeed(
+								{ctor: '_Tuple0'}),
+							function (_p5) {
+								return A2(
+									_elm_lang$core$Task$andThen,
+									_elm_lang$window$Window$size,
+									_elm_lang$core$Platform$sendToSelf(router));
+							})),
+					function (pid) {
+						return _elm_lang$core$Task$succeed(
+							_elm_lang$core$Maybe$Just(
+								{subs: newSubs, pid: pid}));
+					});
+			}
+		} else {
+			if (_p4._1.ctor === '[]') {
+				return A2(
+					_elm_lang$window$Window_ops['&>'],
+					_elm_lang$core$Process$kill(_p4._0._0.pid),
+					_elm_lang$core$Task$succeed(_elm_lang$core$Maybe$Nothing));
+			} else {
+				return _elm_lang$core$Task$succeed(
+					_elm_lang$core$Maybe$Just(
+						{subs: newSubs, pid: _p4._0._0.pid}));
+			}
+		}
+	});
+var _elm_lang$window$Window$subscription = _elm_lang$core$Native_Platform.leaf('Window');
+var _elm_lang$window$Window$Size = F2(
+	function (a, b) {
+		return {width: a, height: b};
+	});
+var _elm_lang$window$Window$MySub = function (a) {
+	return {ctor: 'MySub', _0: a};
+};
+var _elm_lang$window$Window$resizes = function (tagger) {
+	return _elm_lang$window$Window$subscription(
+		_elm_lang$window$Window$MySub(tagger));
+};
+var _elm_lang$window$Window$subMap = F2(
+	function (func, _p6) {
+		var _p7 = _p6;
+		return _elm_lang$window$Window$MySub(
+			function (_p8) {
+				return func(
+					_p7._0(_p8));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
+
 var _user$project$Utils$unfoldr = F2(
 	function (f, b) {
 		var unfoldr$ = F3(
@@ -8813,6 +9299,10 @@ var _user$project$Utils$unfoldr = F2(
 					[]),
 				f,
 				b));
+	});
+var _user$project$Utils$IntVector2 = F2(
+	function (a, b) {
+		return {x: a, y: b};
 	});
 var _user$project$Utils$Vector3 = F3(
 	function (a, b, c) {
@@ -8921,6 +9411,26 @@ var _user$project$Slider$UpdateValue = function (a) {
 	return {ctor: 'UpdateValue', _0: a};
 };
 var _user$project$Slider$view = function (model) {
+	var sliderHandleStyle = _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+			{ctor: '_Tuple2', _0: 'left', _1: '410px'},
+			{ctor: '_Tuple2', _0: 'top', _1: '40px'},
+			{ctor: '_Tuple2', _0: 'width', _1: '40px'},
+			{ctor: '_Tuple2', _0: 'height', _1: '10px'},
+			{ctor: '_Tuple2', _0: 'border', _1: '1px solid #FFFFFF'},
+			{ctor: '_Tuple2', _0: 'background-color', _1: '#707070'}
+		]);
+	var sliderStyle = _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+			{ctor: '_Tuple2', _0: 'left', _1: '10px'},
+			{ctor: '_Tuple2', _0: 'top', _1: '40px'},
+			{ctor: '_Tuple2', _0: 'width', _1: '400px'},
+			{ctor: '_Tuple2', _0: 'height', _1: '10px'},
+			{ctor: '_Tuple2', _0: 'border', _1: '1px solid #FFFFFF'},
+			{ctor: '_Tuple2', _0: 'background-color', _1: '#303030'}
+		]);
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -8933,14 +9443,23 @@ var _user$project$Slider$view = function (model) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
+						_elm_lang$html$Html$text(model.name)
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+								{ctor: '_Tuple2', _0: 'left', _1: '10px'}
+							]))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
 						_elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							model.name,
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								' ',
-								_elm_lang$core$Basics$toString(model.value))))
+						_elm_lang$core$Basics$toString(model.value))
 					])),
 				A2(
 				_elm_lang$html$Html$div,
@@ -8963,14 +9482,62 @@ var _user$project$Slider$view = function (model) {
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[]))
-					]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(sliderStyle)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(sliderHandleStyle)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
 			]));
 };
 
-var _user$project$Sliders$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {decayTime: a, rainIntensity: b, backgroundNoiseLevel: c, dropLevel: d, reverbLevel: e, masterVolume: f};
+var _user$project$Sliders$sliderPositioning = F2(
+	function (x, y) {
+		return _elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				{
+				ctor: '_Tuple2',
+				_0: 'left',
+				_1: _elm_lang$core$Basics$toString(x)
+			},
+				{
+				ctor: '_Tuple2',
+				_0: 'top',
+				_1: _elm_lang$core$Basics$toString(y)
+			}
+			]);
 	});
+var _user$project$Sliders$Model = F7(
+	function (a, b, c, d, e, f, g) {
+		return {decayTime: a, rainIntensity: b, backgroundNoiseLevel: c, dropLevel: d, reverbLevel: e, masterVolume: f, activeSlider: g};
+	});
+var _user$project$Sliders$ActiveSliderGetter = function (a) {
+	return {ctor: 'ActiveSliderGetter', _0: a};
+};
+var _user$project$Sliders$ResizeWindow = function (a) {
+	return {ctor: 'ResizeWindow', _0: a};
+};
+var _user$project$Sliders$MouseDown = function (a) {
+	return {ctor: 'MouseDown', _0: a};
+};
+var _user$project$Sliders$MouseUp = function (a) {
+	return {ctor: 'MouseUp', _0: a};
+};
+var _user$project$Sliders$MouseMove = function (a) {
+	return {ctor: 'MouseMove', _0: a};
+};
 var _user$project$Sliders$MasterVolume = function (a) {
 	return {ctor: 'MasterVolume', _0: a};
 };
@@ -9034,7 +9601,18 @@ var _user$project$Sliders$init = function () {
 	var decayTimeInitCmd = _p5._1;
 	return {
 		ctor: '_Tuple2',
-		_0: A6(_user$project$Sliders$Model, decayTimeSlider, rainIntensitySlider, backgroundNoiseLevelSlider, dropLevelSlider, reverbLevelSlider, masterVolumeSlider),
+		_0: {
+			decayTime: decayTimeSlider,
+			rainIntensity: rainIntensitySlider,
+			backgroundNoiseLevel: backgroundNoiseLevelSlider,
+			dropLevel: dropLevelSlider,
+			reverbLevel: reverbLevelSlider,
+			masterVolume: masterVolumeSlider,
+			activeSlider: _user$project$Sliders$ActiveSliderGetter(
+				function (m) {
+					return _elm_lang$core$Maybe$Nothing;
+				})
+		},
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -9048,78 +9626,87 @@ var _user$project$Sliders$init = function () {
 	};
 }();
 var _user$project$Sliders$update = F2(
-	function (sliderMsg, sliders) {
+	function (sliderMsg, model) {
 		var _p6 = sliderMsg;
 		switch (_p6.ctor) {
 			case 'DecayTime':
-				var _p7 = A2(_user$project$Slider$update, _p6._0, sliders.decayTime);
+				var _p7 = A2(_user$project$Slider$update, _p6._0, model.decayTime);
 				var updatedSliderModel = _p7._0;
 				var sliderCmd = _p7._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						sliders,
+						model,
 						{decayTime: updatedSliderModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$DecayTime, sliderCmd)
 				};
 			case 'RainIntensity':
-				var _p8 = A2(_user$project$Slider$update, _p6._0, sliders.rainIntensity);
+				var _p8 = A2(_user$project$Slider$update, _p6._0, model.rainIntensity);
 				var updatedSliderModel = _p8._0;
 				var sliderCmd = _p8._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						sliders,
+						model,
 						{rainIntensity: updatedSliderModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$RainIntensity, sliderCmd)
 				};
 			case 'BackgroundNoiseLevel':
-				var _p9 = A2(_user$project$Slider$update, _p6._0, sliders.backgroundNoiseLevel);
+				var _p9 = A2(_user$project$Slider$update, _p6._0, model.backgroundNoiseLevel);
 				var updatedSliderModel = _p9._0;
 				var sliderCmd = _p9._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						sliders,
+						model,
 						{backgroundNoiseLevel: updatedSliderModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$BackgroundNoiseLevel, sliderCmd)
 				};
 			case 'DropLevel':
-				var _p10 = A2(_user$project$Slider$update, _p6._0, sliders.dropLevel);
+				var _p10 = A2(_user$project$Slider$update, _p6._0, model.dropLevel);
 				var updatedSliderModel = _p10._0;
 				var sliderCmd = _p10._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						sliders,
+						model,
 						{dropLevel: updatedSliderModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$DropLevel, sliderCmd)
 				};
 			case 'ReverbLevel':
-				var _p11 = A2(_user$project$Slider$update, _p6._0, sliders.reverbLevel);
+				var _p11 = A2(_user$project$Slider$update, _p6._0, model.reverbLevel);
 				var updatedSliderModel = _p11._0;
 				var sliderCmd = _p11._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						sliders,
+						model,
 						{reverbLevel: updatedSliderModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$ReverbLevel, sliderCmd)
 				};
-			default:
-				var _p12 = A2(_user$project$Slider$update, _p6._0, sliders.masterVolume);
+			case 'MasterVolume':
+				var _p12 = A2(_user$project$Slider$update, _p6._0, model.masterVolume);
 				var updatedSliderModel = _p12._0;
 				var sliderCmd = _p12._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						sliders,
+						model,
 						{masterVolume: updatedSliderModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$MasterVolume, sliderCmd)
 				};
+			case 'MouseMove':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'MouseDown':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'MouseUp':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 var _user$project$Sliders$view = function (model) {
+	var separation = 70;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -9127,35 +9714,95 @@ var _user$project$Sliders$view = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Sliders$DecayTime,
-				_user$project$Slider$view(model.decayTime)),
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						A2(_user$project$Sliders$sliderPositioning, 0, 0 * separation))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Sliders$DecayTime,
+						_user$project$Slider$view(model.decayTime))
+					])),
 				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Sliders$RainIntensity,
-				_user$project$Slider$view(model.rainIntensity)),
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						A2(_user$project$Sliders$sliderPositioning, 0, 1 * separation))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Sliders$RainIntensity,
+						_user$project$Slider$view(model.rainIntensity))
+					])),
 				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Sliders$BackgroundNoiseLevel,
-				_user$project$Slider$view(model.backgroundNoiseLevel)),
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						A2(_user$project$Sliders$sliderPositioning, 0, 2 * separation))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Sliders$BackgroundNoiseLevel,
+						_user$project$Slider$view(model.backgroundNoiseLevel))
+					])),
 				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Sliders$DropLevel,
-				_user$project$Slider$view(model.dropLevel)),
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						A2(_user$project$Sliders$sliderPositioning, 0, 3 * separation))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Sliders$DropLevel,
+						_user$project$Slider$view(model.dropLevel))
+					])),
 				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Sliders$ReverbLevel,
-				_user$project$Slider$view(model.reverbLevel)),
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						A2(_user$project$Sliders$sliderPositioning, 0, 4 * separation))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Sliders$ReverbLevel,
+						_user$project$Slider$view(model.reverbLevel))
+					])),
 				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Sliders$MasterVolume,
-				_user$project$Slider$view(model.masterVolume))
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						A2(_user$project$Sliders$sliderPositioning, 0, 5 * separation))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Sliders$MasterVolume,
+						_user$project$Slider$view(model.masterVolume))
+					]))
 			]));
 };
 
-var _user$project$Model$Model = F4(
-	function (a, b, c, d) {
-		return {sliders: a, on: b, nextDropTime: c, visibility: d};
+var _user$project$Model$Model = F5(
+	function (a, b, c, d, e) {
+		return {sliders: a, on: b, nextDropTime: c, visibility: d, windowSize: e};
 	});
 
 var _user$project$RainParams$randVector3Gen = A4(
@@ -9196,6 +9843,18 @@ var _user$project$Schedule$drops = F3(
 	});
 var _user$project$Schedule$interval = 200;
 
+var _user$project$Update$ResizeWindow = function (a) {
+	return {ctor: 'ResizeWindow', _0: a};
+};
+var _user$project$Update$MouseDown = function (a) {
+	return {ctor: 'MouseDown', _0: a};
+};
+var _user$project$Update$MouseUp = function (a) {
+	return {ctor: 'MouseUp', _0: a};
+};
+var _user$project$Update$MouseMove = function (a) {
+	return {ctor: 'MouseMove', _0: a};
+};
 var _user$project$Update$VisibilityChange = function (a) {
 	return {ctor: 'VisibilityChange', _0: a};
 };
@@ -9209,7 +9868,13 @@ var _user$project$Update$init = function () {
 	var initSlidersCmd = _p0._1;
 	return {
 		ctor: '_Tuple2',
-		_0: A4(_user$project$Model$Model, initSliders, true, 0, true),
+		_0: A5(
+			_user$project$Model$Model,
+			initSliders,
+			true,
+			0,
+			true,
+			{height: 100, width: 100}),
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -9294,7 +9959,7 @@ var _user$project$Update$update = F2(
 						{on: true}),
 					_1: _user$project$Cmds$togglePort(true)
 				};
-			default:
+			case 'VisibilityChange':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9302,30 +9967,112 @@ var _user$project$Update$update = F2(
 						{visibility: _p1._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'ResizeWindow':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'MouseMove':
+				var _p4 = A2(
+					_user$project$Sliders$update,
+					_user$project$Sliders$MouseMove(_p1._0),
+					model.sliders);
+				var updatedSliders = _p4._0;
+				var slidersCmd = _p4._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{sliders: updatedSliders}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
+				};
+			case 'MouseDown':
+				var _p5 = A2(
+					_user$project$Sliders$update,
+					_user$project$Sliders$MouseDown(_p1._0),
+					model.sliders);
+				var updatedSliders = _p5._0;
+				var slidersCmd = _p5._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{sliders: updatedSliders}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
+				};
+			default:
+				var _p6 = A2(
+					_user$project$Sliders$update,
+					_user$project$Sliders$MouseUp(_p1._0),
+					model.sliders);
+				var updatedSliders = _p6._0;
+				var slidersCmd = _p6._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{sliders: updatedSliders}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
+				};
 		}
 	});
 
 var _user$project$View$view = function (model) {
+	var margin = {x: 30, y: 30};
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
-			[]),
+			[
+				_elm_lang$html$Html_Attributes$style(
+				_elm_lang$core$Native_List.fromArray(
+					[
+						{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+						{
+						ctor: '_Tuple2',
+						_0: 'left',
+						_1: _elm_lang$core$Basics$toString(margin.x)
+					},
+						{
+						ctor: '_Tuple2',
+						_0: 'top',
+						_1: _elm_lang$core$Basics$toString(margin.y)
+					}
+					]))
+			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
 				A2(
-				_elm_lang$html$Html$button,
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Events$onClick(_user$project$Update$ToggleOnOff)
+						A2(
+						_elm_lang$html$Html_App$map,
+						_user$project$Update$SliderChange,
+						_user$project$Sliders$view(model.sliders))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+								{ctor: '_Tuple2', _0: 'left', _1: '320px'}
+							]))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Rain On/Off')
-					])),
-				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$Update$SliderChange,
-				_user$project$Sliders$view(model.sliders))
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Events$onClick(_user$project$Update$ToggleOnOff)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Rain On/Off')
+							]))
+					]))
 			]));
 };
 
@@ -9336,7 +10083,11 @@ var _user$project$Subscriptions$subscriptions = function (model) {
 		_elm_lang$core$Native_List.fromArray(
 			[
 				_user$project$Subscriptions$timerPort(_user$project$Update$ScheduleDrops),
-				_user$project$Subscriptions$visibilityPort(_user$project$Update$VisibilityChange)
+				_user$project$Subscriptions$visibilityPort(_user$project$Update$VisibilityChange),
+				_elm_lang$mouse$Mouse$moves(_user$project$Update$MouseMove),
+				_elm_lang$mouse$Mouse$downs(_user$project$Update$MouseDown),
+				_elm_lang$mouse$Mouse$ups(_user$project$Update$MouseUp),
+				_elm_lang$window$Window$resizes(_user$project$Update$ResizeWindow)
 			]));
 };
 

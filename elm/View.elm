@@ -14,7 +14,21 @@ import String
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ button [ onClick ToggleOnOff ] [ text "Rain On/Off" ]
-    , Html.App.map SliderChange <| Sliders.view model.sliders
-    ]
+  let
+    margin = { x = 30, y = 30 }
+  in
+    div [ style [ ("position", "absolute")
+                , ("left", toString margin.x)
+                , ("top", toString margin.y)
+                ]
+        ]
+      [ div []
+          [ Html.App.map SliderChange <| Sliders.view model.sliders
+          ]
+      , div [ style [ ("position", "absolute")
+                    , ("left", "320px")
+                    ]
+            ]
+          [ button [ onClick ToggleOnOff ] [ text "Rain On/Off" ]
+          ]
+      ]

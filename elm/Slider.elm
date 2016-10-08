@@ -5,6 +5,9 @@ module Slider exposing ( Model
                        , view
                        )
 
+import Utils exposing ( IntVector2
+                      )
+
 
 import Html exposing (Html, input, text, div)
 import Html.Attributes exposing (..)
@@ -64,21 +67,53 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ div []
-        [ text <| model.name ++ " " ++ toString model.value
-        ]
+  let
+    sliderStyle =
+      [ 
+        ("position" , "absolute")
+      , ("left"     , "10px")
+      , ("top"      , "40px")
+      , ("width"    , "400px")
+      , ("height"   , "10px")
+      , ("border"   , "1px solid #FFFFFF")
+      , ("background-color", "#303030")
+      ]
+    sliderHandleStyle =
+      [ 
+        ("position" , "absolute")
+      , ("left"     , "410px")
+      , ("top"      , "40px")
+      , ("width"    , "40px")
+      , ("height"   , "10px")
+      , ("border"   , "1px solid #FFFFFF")
+      , ("background-color", "#707070")
+      ]
+  in
+    div []
+      [ div []
+          [ text model.name
+          ]
+      , div [ style [ ("position", "absolute")
+                    , ("left", "10px")
+                    ]
+            ]
+          [ text <| toString model.value
+          ]
       , div []
-        [ input
-          [ type' "range"
-          , Html.Attributes.min "0"
-          , Html.Attributes.max <| toString sliderMax
-          --, value <| toString <| round <| scaleValToSlider model model.value
-          , value <| toString <| scaleValToSlider model model.value
-          , onInput UpdateValue
-          ] []
-        ]
-    ]
+          [ input
+            [ type' "range"
+            , Html.Attributes.min "0"
+            , Html.Attributes.max <| toString sliderMax
+            --, value <| toString <| round <| scaleValToSlider model model.value
+            , value <| toString <| scaleValToSlider model model.value
+            , onInput UpdateValue
+            ] []
+          ]
+      , div [ style sliderStyle ]
+          []
+      , div [ style sliderHandleStyle ]
+          []
+      ]
 
 sliderMax : Int
 sliderMax = 1000

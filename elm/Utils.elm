@@ -1,4 +1,5 @@
 module Utils exposing ( Vector3
+                      , IntVector2
                       , WATime
                       , JSTime
                       , unfoldr
@@ -8,6 +9,10 @@ type alias WATime = Float
 
 type alias JSTime = Float
 
+type alias IntVector2 =
+  { x : Int
+  , y : Int
+  }
 
 type alias Vector3 =
   { x : Float

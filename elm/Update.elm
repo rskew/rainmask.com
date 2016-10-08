@@ -6,6 +6,7 @@ module Update exposing ( Msg (..)
 import Model exposing ( Model
                       )
 import Utils exposing ( Vector3
+                      , IntVector2
                       , WATime
                       , JSTime
                       )
@@ -25,6 +26,11 @@ import String exposing (toFloat)
 import Random
 import Update.Extra exposing (sequence)
 import List
+import Mouse exposing ( position
+                      , ups
+                      , downs
+                      )
+import Window
 
 
 type Msg
@@ -34,6 +40,10 @@ type Msg
   | SliderChange Sliders.Msg
   | ToggleOnOff
   | VisibilityChange Bool
+  | MouseMove IntVector2
+  | MouseUp IntVector2
+  | MouseDown IntVector2
+  | ResizeWindow Window.Size
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -94,6 +104,38 @@ update msg model =
       , Cmd.none
       )
 
+    ResizeWindow size ->
+      ( model
+      , Cmd.none
+      )
+
+    MouseMove pos ->
+      let
+        ( updatedSliders, slidersCmd ) =
+            Sliders.update (Sliders.MouseMove pos) model.sliders
+      in
+        ( { model | sliders = updatedSliders }
+        , Cmd.map SliderChange slidersCmd
+        )
+
+    MouseDown pos ->
+      let
+        ( updatedSliders, slidersCmd ) =
+            Sliders.update (Sliders.MouseDown pos) model.sliders
+      in
+        ( { model | sliders = updatedSliders }
+        , Cmd.map SliderChange slidersCmd
+        )
+
+    MouseUp pos ->
+      let
+        ( updatedSliders, slidersCmd ) =
+            Sliders.update (Sliders.MouseUp pos) model.sliders
+      in
+        ( { model | sliders = updatedSliders }
+        , Cmd.map SliderChange slidersCmd
+        )
+
 
 init : ( Model, Cmd Msg )
 init =
@@ -106,6 +148,7 @@ init =
         True
         0
         True
+        { height = 100, width = 100 }
     , Cmd.batch [ Cmd.map SliderChange initSlidersCmd
                 -- initialise timer
                 , setTimerPort Schedule.interval
