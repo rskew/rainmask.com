@@ -2,6 +2,8 @@
     <head>
         <script src="js/rainmask.js"></script>
         <script src="js/visibility.js"></script>
+        <script src="js/noise.js"></script>
+        <script src="js/mouseHandler.js"></script>
     </head>
     <body>
         <div>
@@ -14,14 +16,16 @@
             <debug2 id="debug3"></debug3>
         </div>
         <div id="elm_app"></div>
+        <!--
         <div>
             <a href="http://www.github.com/rskew/rainmask.com" target="_blank">Source</a>
         </div>
+        -->
     </body>
     <script>
         var appDiv = document.getElementById("elm_app"),
             app = Elm.Main.embed(appDiv);
     </script>
-        <script src="js/noise.js"></script>
         <script src="js/webaudio.js"></script>
+        <script src="js/ios.js"></script>
 </html>

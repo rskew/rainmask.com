@@ -4,7 +4,10 @@ module Model exposing ( Model
 
 import Cmds
 import Sliders
-import Utils exposing (WATime)
+import Utils exposing ( WATime
+                      )
+
+import Window
 
   
 type alias Model =
@@ -12,4 +15,5 @@ type alias Model =
   , on : Bool
   , nextDropTime : WATime
   , visibility : Bool
+  , windowSize : Window.Size
   }

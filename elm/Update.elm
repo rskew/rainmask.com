@@ -1,11 +1,13 @@
 module Update exposing ( Msg (..)
                        , update
+                       , sliderMargin
                        , init
                        )
 
 import Model exposing ( Model
                       )
 import Utils exposing ( Vector3
+                      , IntVector2
                       , WATime
                       , JSTime
                       )
@@ -25,6 +27,11 @@ import String exposing (toFloat)
 import Random
 import Update.Extra exposing (sequence)
 import List
+import Mouse exposing ( position
+                      , ups
+                      , downs
+                      )
+import Window
 
 
 type Msg
@@ -34,6 +41,10 @@ type Msg
   | SliderChange Sliders.Msg
   | ToggleOnOff
   | VisibilityChange Bool
+  | MouseMove IntVector2
+  | MouseUp IntVector2
+  | MouseDown IntVector2
+  | ResizeWindow Window.Size
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -94,18 +105,60 @@ update msg model =
       , Cmd.none
       )
 
+    MouseMove pos ->
+      let
+        ( updatedSliders, slidersCmd ) =
+            Sliders.update (Sliders.MouseMove <| relativePos pos model) model.sliders
+      in
+        ( { model | sliders = updatedSliders }
+        , Cmd.map SliderChange slidersCmd
+        )
+
+    MouseDown pos ->
+      let
+        ( updatedSliders, slidersCmd ) =
+            Sliders.update (Sliders.MouseDown <| relativePos pos model) model.sliders
+      in
+        ( { model | sliders = updatedSliders }
+        , Cmd.map SliderChange slidersCmd
+        )
+
+    MouseUp pos ->
+      let
+        ( updatedSliders, slidersCmd ) =
+            Sliders.update (Sliders.MouseUp <| relativePos pos model) model.sliders
+      in
+        ( { model | sliders = updatedSliders }
+        , Cmd.map SliderChange slidersCmd
+        )
+
+    ResizeWindow newSize ->
+      ( { model | windowSize = newSize }
+      , Cmd.none
+      )
+
+
+relativePos : IntVector2 -> Model -> IntVector2
+relativePos pos model =
+  { x = pos.x - sliderMargin.x, y = pos.y - sliderMargin.y }
+
+
+sliderMargin : IntVector2
+sliderMargin = { x = 30, y = 40 }
+
 
 init : ( Model, Cmd Msg )
 init =
   let
     ( initSliders, initSlidersCmd ) =
-        Sliders.init
+        Sliders.init { height = 800, width = 400 }
   in
     ( Model
         initSliders
         True
         0
         True
+        { height = 800, width = 400 }
     , Cmd.batch [ Cmd.map SliderChange initSlidersCmd
                 -- initialise timer
                 , setTimerPort Schedule.interval

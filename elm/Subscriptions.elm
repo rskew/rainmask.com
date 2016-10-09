@@ -6,6 +6,9 @@ import Utils exposing ( WATime
                       , JSTime
                       )
 
+import Mouse
+import Window
+
 --import Time exposing (millisecond)
 
 port timerPort : (JSTime -> msg) -> Sub msg
@@ -17,4 +20,8 @@ subscriptions model =
   Sub.batch
     [ timerPort ScheduleDrops
     , visibilityPort VisibilityChange
+    , Mouse.moves MouseMove
+    , Mouse.downs MouseDown
+    , Mouse.ups MouseUp
+    , Window.resizes ResizeWindow
     ]

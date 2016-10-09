@@ -2,7 +2,8 @@
 
 function createNoiseBuffers () {
     var bufferSize = audioContext.sampleRate,
-        nBufs = 128+2,
+        //nBufs = 128,
+        nBufs = 1,
         noiseBuffers = [];
     for (var buf = 0; buf < nBufs; buf++) {
         var noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate),
@@ -17,6 +18,12 @@ function createNoiseBuffers () {
         }
         noiseBuffers[buf] = noiseBuffer;
     }
+
+    return noiseBuffers;
+}
+
+
+function createBackgroundNoiseBuffers () {
     
     // Create Background Noise
     var bufferSize = audioContext.sampleRate * 4;
@@ -33,5 +40,5 @@ function createNoiseBuffers () {
         }
     }
 
-    return [noiseBuffers, backgroundNoiseBuffer];
+    return backgroundNoiseBuffer;
 };

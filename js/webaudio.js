@@ -1,37 +1,5 @@
-//var isIOS = false
-//if('webkitAudioContext' in window) {
-//    var audioContext = new webkitAudioContext();
-//    isIOS = true
-//} else {
-//    var audioContext = new AudioContext()
-//}
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContext();
-
-// IOS requires touch interaction to unmute sound
-window.addEventListener('touchstart', function() {
-
-
-    document.getElementById("debug1").innerHTML = 'Touch!';
-
-	// create empty buffer
-	//var buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate);
-	var source = audioContext.createBufferSource();
-	source.buffer = noiseBuffers[0];
-
-	// connect to output (your speakers)
-	source.connect(audioContext.destination);
-
-	// play the file
-    //source.loop = true;
-    //if (isIOS) {
-    //    source.noteOn();
-    //} else {
-	//    source.start(0);
-    //}
-    source.noteOn(1);
-
-}, false);
 
 var masterGain = audioContext.createGain(1);
 masterGain.connect(audioContext.destination);
@@ -68,7 +36,8 @@ wetGain.connect(masterGain);
 
 // Create the noise buffers
 
-[noiseBuffers, backgroundNoiseBuffers] = createNoiseBuffers();
+noiseBuffers = createNoiseBuffers();
+backgroundNoiseBuffers = createBackgroundNoiseBuffers();
 
 var backgroundNoise = audioContext.createBufferSource();
     
@@ -77,7 +46,7 @@ backgroundNoise.loop = true;
 backgroundNoise.start(0);
 
 var backgroundNoiseGain = audioContext.createGain(0);
-backgroundNoiseGain.gain.setValueAtTime(0.17, audioContext.currentTime);
+backgroundNoiseGain.gain.setValueAtTime(0, audioContext.currentTime);
 
 backgroundNoise.connect(backgroundNoiseGain);
 backgroundNoiseGain.connect(mainBusGain);
@@ -87,7 +56,7 @@ function newDrop (startTime, decayTime, pan) {
 
     var raindrop = audioContext.createBufferSource();
 
-    var buf = Math.floor( Math.random() * (noiseBuffers.length - 2) );
+    var buf = Math.floor( Math.random() * (noiseBuffers.length) );
     raindrop.buffer = noiseBuffers[buf];
     raindrop.loop = true;
 
@@ -153,8 +122,6 @@ app.ports.raindropPort.subscribe(function (args) {
     var pan = args[2];
 
     newDrop (startTime, decayTime, pan);
-    //document.getElementById("debug1").innerHTML = startTime;
-    //document.getElementById("debug2").innerHTML = audioContext.currentTime;
 });
 
 
@@ -167,8 +134,6 @@ if (typeof(timerWorker) == "undefined") {
 timerWorker.postMessage(1000./4);
 timerWorker.addEventListener('message', function (e) {
     app.ports.timerPort.send(audioContext.currentTime);
-    //document.getElementById("debug2").innerHTML = audioContext.currentTime;
-    //document.getElementById("debug3").innerHTML = e.data[1];
 });
 
 
@@ -181,3 +146,5 @@ function visible (yesno) {
     app.ports.visibilityPort.send(yesno);
 };
 
+
+//document.getElementById("debug1").innerHTML = "thing";
