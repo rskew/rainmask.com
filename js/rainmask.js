@@ -9304,6 +9304,10 @@ var _user$project$Utils$IntVector2 = F2(
 	function (a, b) {
 		return {x: a, y: b};
 	});
+var _user$project$Utils$ContainerSize = F2(
+	function (a, b) {
+		return {height: a, width: b};
+	});
 var _user$project$Utils$Vector3 = F3(
 	function (a, b, c) {
 		return {x: a, y: b, z: c};
@@ -9361,61 +9365,21 @@ var _user$project$Slider$quantise = function (flt) {
 		_elm_lang$core$Basics$toFloat(
 			_elm_lang$core$Basics$round(flt / q)));
 };
-var _user$project$Slider$sliderMax = 1000;
-var _user$project$Slider$scaleSliderVal = F2(
-	function (model, val) {
-		return (val * ((model.max - model.min) / _elm_lang$core$Basics$toFloat(_user$project$Slider$sliderMax))) + model.min;
-	});
-var _user$project$Slider$scaleValToSlider = F2(
-	function (model, val) {
-		return (val - model.min) * (_elm_lang$core$Basics$toFloat(_user$project$Slider$sliderMax) / (model.max - model.min));
-	});
-var _user$project$Slider$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		var $try = _elm_lang$core$String$toFloat(_p0._0);
-		var _p1 = $try;
-		if (_p1.ctor === 'Ok') {
-			var _p2 = _p1._0;
-			var sliderVal = model.quant ? _user$project$Slider$quantise(
-				A2(_user$project$Slider$scaleSliderVal, model, _p2)) : A2(_user$project$Slider$scaleSliderVal, model, _p2);
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{value: sliderVal}),
-				_1: model.updateCommand(sliderVal)
-			};
-		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{value: 9999}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
-		}
-	});
-var _user$project$Slider$initialise = function (mdl) {
-	return {
-		ctor: '_Tuple2',
-		_0: mdl,
-		_1: mdl.updateCommand(mdl.value)
-	};
-};
-var _user$project$Slider$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {name: a, value: b, max: c, min: d, updateCommand: e, quant: f};
-	});
-var _user$project$Slider$UpdateValue = function (a) {
-	return {ctor: 'UpdateValue', _0: a};
-};
 var _user$project$Slider$view = function (model) {
 	var sliderHandleStyle = _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
-			{ctor: '_Tuple2', _0: 'left', _1: '410px'},
-			{ctor: '_Tuple2', _0: 'top', _1: '40px'},
+			{
+			ctor: '_Tuple2',
+			_0: 'left',
+			_1: A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(
+					_elm_lang$core$Basics$round(
+						(model.value / model.max) * _elm_lang$core$Basics$toFloat(model.containerSize.width - 50)) + 10),
+				'px')
+		},
+			{ctor: '_Tuple2', _0: 'top', _1: '60px'},
 			{ctor: '_Tuple2', _0: 'width', _1: '40px'},
 			{ctor: '_Tuple2', _0: 'height', _1: '10px'},
 			{ctor: '_Tuple2', _0: 'border', _1: '1px solid #FFFFFF'},
@@ -9425,8 +9389,17 @@ var _user$project$Slider$view = function (model) {
 		[
 			{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
 			{ctor: '_Tuple2', _0: 'left', _1: '10px'},
-			{ctor: '_Tuple2', _0: 'top', _1: '40px'},
-			{ctor: '_Tuple2', _0: 'width', _1: '400px'},
+			{ctor: '_Tuple2', _0: 'top', _1: '60px'},
+			{
+			ctor: '_Tuple2',
+			_0: 'width',
+			_1: A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(
+					_elm_lang$core$Basics$round(
+						(model.value / model.max) * _elm_lang$core$Basics$toFloat(model.containerSize.width - 50)) + 10),
+				'px')
+		},
 			{ctor: '_Tuple2', _0: 'height', _1: '10px'},
 			{ctor: '_Tuple2', _0: 'border', _1: '1px solid #FFFFFF'},
 			{ctor: '_Tuple2', _0: 'background-color', _1: '#303030'}
@@ -9464,28 +9437,6 @@ var _user$project$Slider$view = function (model) {
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						A2(
-						_elm_lang$html$Html$input,
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html_Attributes$type$('range'),
-								_elm_lang$html$Html_Attributes$min('0'),
-								_elm_lang$html$Html_Attributes$max(
-								_elm_lang$core$Basics$toString(_user$project$Slider$sliderMax)),
-								_elm_lang$html$Html_Attributes$value(
-								_elm_lang$core$Basics$toString(
-									A2(_user$project$Slider$scaleValToSlider, model, model.value))),
-								_elm_lang$html$Html_Events$onInput(_user$project$Slider$UpdateValue)
-							]),
-						_elm_lang$core$Native_List.fromArray(
-							[]))
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(sliderStyle)
 					]),
@@ -9500,6 +9451,103 @@ var _user$project$Slider$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[]))
 			]));
+};
+var _user$project$Slider$isOnSlider = F2(
+	function (pos, model) {
+		return ((_elm_lang$core$Native_Utils.cmp(pos.x, 8) > 0) && ((_elm_lang$core$Native_Utils.cmp(
+			pos.x,
+			_elm_lang$core$Basics$round(
+				(model.value / model.max) * _elm_lang$core$Basics$toFloat(model.containerSize.width - 50)) + 52) < 0) && ((_elm_lang$core$Native_Utils.cmp(pos.y, 58) > 0) && (_elm_lang$core$Native_Utils.cmp(pos.y, 72) < 0)))) ? true : false;
+	});
+var _user$project$Slider$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'UpdateValue':
+				var _p1 = _p0._0;
+				var newVal = model.quant ? _user$project$Slider$quantise(_p1) : _p1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{value: newVal}),
+					_1: model.updateCommand(newVal)
+				};
+			case 'MouseMove':
+				var _p3 = _p0._0;
+				var _p2 = model.grabbed;
+				if (_p2 === true) {
+					var scalePixelToVal = (model.max - model.min) / _elm_lang$core$Basics$toFloat(model.containerSize.width - 50);
+					var inputVal = A2(
+						_elm_lang$core$Basics$max,
+						A2(
+							_elm_lang$core$Basics$min,
+							model.value + (scalePixelToVal * _elm_lang$core$Basics$toFloat(_p3.x - model.mousePos.x)),
+							model.max),
+						model.min);
+					var newVal = model.quant ? _user$project$Slider$quantise(inputVal) : inputVal;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{value: newVal, mousePos: _p3}),
+						_1: model.updateCommand(newVal)
+					};
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
+			case 'MouseDown':
+				var _p4 = _p0._0;
+				return A2(_user$project$Slider$isOnSlider, _p4, model) ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{grabbed: true, mousePos: _p4}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'MouseUp':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{grabbed: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{containerSize: _p0._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+		}
+	});
+var _user$project$Slider$initialise = function (mdl) {
+	return {
+		ctor: '_Tuple2',
+		_0: mdl,
+		_1: mdl.updateCommand(mdl.value)
+	};
+};
+var _user$project$Slider$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {name: a, value: b, max: c, min: d, updateCommand: e, quant: f, containerSize: g, grabbed: h, mousePos: i};
+	});
+var _user$project$Slider$ResizeWindow = function (a) {
+	return {ctor: 'ResizeWindow', _0: a};
+};
+var _user$project$Slider$MouseDown = function (a) {
+	return {ctor: 'MouseDown', _0: a};
+};
+var _user$project$Slider$MouseUp = function (a) {
+	return {ctor: 'MouseUp', _0: a};
+};
+var _user$project$Slider$MouseMove = function (a) {
+	return {ctor: 'MouseMove', _0: a};
+};
+var _user$project$Slider$UpdateValue = function (a) {
+	return {ctor: 'UpdateValue', _0: a};
 };
 
 var _user$project$Sliders$sliderPositioning = F2(
@@ -9519,13 +9567,73 @@ var _user$project$Sliders$sliderPositioning = F2(
 			}
 			]);
 	});
-var _user$project$Sliders$Model = F7(
-	function (a, b, c, d, e, f, g) {
-		return {decayTime: a, rainIntensity: b, backgroundNoiseLevel: c, dropLevel: d, reverbLevel: e, masterVolume: f, activeSlider: g};
+var _user$project$Sliders$sliderSep = 90;
+var _user$project$Sliders$relativePos = F2(
+	function (pos, _p0) {
+		var _p1 = _p0;
+		var _p2 = _p1._0;
+		return {x: pos.x - _p2.relativePos.x, y: pos.y - _p2.relativePos.y};
 	});
-var _user$project$Sliders$ActiveSliderGetter = function (a) {
-	return {ctor: 'ActiveSliderGetter', _0: a};
+var _user$project$Sliders$Model = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {decayTime: a, rainIntensity: b, backgroundNoiseLevel: c, dropLevel: d, reverbLevel: e, masterVolume: f, activeSlider: g, containerSize: h};
+	});
+var _user$project$Sliders$SliderHandle = function (a) {
+	return {ctor: 'SliderHandle', _0: a};
 };
+var _user$project$Sliders$handleMouseMove = F2(
+	function (pos, model) {
+		var _p3 = model.activeSlider;
+		if (_p3.ctor === 'Just') {
+			var _p5 = _p3._0._0;
+			var _p4 = A2(
+				_user$project$Slider$update,
+				_user$project$Slider$MouseMove(
+					A2(
+						_user$project$Sliders$relativePos,
+						pos,
+						_user$project$Sliders$SliderHandle(_p5))),
+				_p5.getter(model));
+			var updatedSliderModel = _p4._0;
+			var sliderCmd = _p4._1;
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_p5.setter, model, updatedSliderModel),
+				_1: A2(_elm_lang$core$Platform_Cmd$map, _p5.msg, sliderCmd)
+			};
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$Sliders$handleMouseUp = F2(
+	function (pos, model) {
+		var _p6 = model.activeSlider;
+		if (_p6.ctor === 'Just') {
+			var _p8 = _p6._0._0;
+			var _p7 = A2(
+				_user$project$Slider$update,
+				_user$project$Slider$MouseUp(
+					A2(
+						_user$project$Sliders$relativePos,
+						pos,
+						_user$project$Sliders$SliderHandle(_p8))),
+				_p8.getter(model));
+			var updatedSliderModel = _p7._0;
+			var sliderCmd = _p7._1;
+			return {
+				ctor: '_Tuple2',
+				_0: A2(
+					_p8.setter,
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{activeSlider: _elm_lang$core$Maybe$Nothing}),
+					updatedSliderModel),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
 var _user$project$Sliders$ResizeWindow = function (a) {
 	return {ctor: 'ResizeWindow', _0: a};
 };
@@ -9556,37 +9664,80 @@ var _user$project$Sliders$RainIntensity = function (a) {
 var _user$project$Sliders$DecayTime = function (a) {
 	return {ctor: 'DecayTime', _0: a};
 };
-var _user$project$Sliders$init = function () {
-	var _p0 = _user$project$Slider$initialise(
-		{name: 'Master Volume', value: 1, max: 1, min: 0, updateCommand: _user$project$Cmds$masterVolumePort, quant: false});
-	var masterVolumeSlider = _p0._0;
-	var masterVolumeInitCmd = _p0._1;
-	var _p1 = _user$project$Slider$initialise(
-		{name: 'Reverb Level', value: 0.4, max: 1, min: 0, updateCommand: _user$project$Cmds$reverbLevelPort, quant: false});
-	var reverbLevelSlider = _p1._0;
-	var reverbLevelInitCmd = _p1._1;
-	var _p2 = _user$project$Slider$initialise(
-		{name: 'Raindrop Level', value: 1, max: 1, min: 0, updateCommand: _user$project$Cmds$dropLevelPort, quant: false});
-	var dropLevelSlider = _p2._0;
-	var dropLevelInitCmd = _p2._1;
-	var _p3 = _user$project$Slider$initialise(
-		{name: 'Background Noise Level', value: 0, max: 1, min: 0, updateCommand: _user$project$Cmds$backgroundNoiseLevelPort, quant: false});
-	var backgroundNoiseLevelSlider = _p3._0;
-	var backgroundNoiseLevelInitCmd = _p3._1;
-	var _p4 = _user$project$Slider$initialise(
+var _user$project$Sliders$init = function (size) {
+	var _p9 = _user$project$Slider$initialise(
+		{
+			name: 'Master Volume',
+			value: 1,
+			max: 1,
+			min: 0,
+			updateCommand: _user$project$Cmds$masterVolumePort,
+			quant: false,
+			containerSize: {height: 70, width: size.width},
+			grabbed: false,
+			mousePos: {x: 0, y: 0}
+		});
+	var masterVolumeSlider = _p9._0;
+	var masterVolumeInitCmd = _p9._1;
+	var _p10 = _user$project$Slider$initialise(
+		{
+			name: 'Reverb Level',
+			value: 0.4,
+			max: 1,
+			min: 0,
+			updateCommand: _user$project$Cmds$reverbLevelPort,
+			quant: false,
+			containerSize: {height: 70, width: size.width},
+			grabbed: false,
+			mousePos: {x: 0, y: 0}
+		});
+	var reverbLevelSlider = _p10._0;
+	var reverbLevelInitCmd = _p10._1;
+	var _p11 = _user$project$Slider$initialise(
+		{
+			name: 'Raindrop Level',
+			value: 1,
+			max: 1,
+			min: 0,
+			updateCommand: _user$project$Cmds$dropLevelPort,
+			quant: false,
+			containerSize: {height: 70, width: size.width},
+			grabbed: false,
+			mousePos: {x: 0, y: 0}
+		});
+	var dropLevelSlider = _p11._0;
+	var dropLevelInitCmd = _p11._1;
+	var _p12 = _user$project$Slider$initialise(
+		{
+			name: 'Background Noise Level',
+			value: 0.15,
+			max: 1,
+			min: 0,
+			updateCommand: _user$project$Cmds$backgroundNoiseLevelPort,
+			quant: false,
+			containerSize: {height: 70, width: size.width},
+			grabbed: false,
+			mousePos: {x: 0, y: 0}
+		});
+	var backgroundNoiseLevelSlider = _p12._0;
+	var backgroundNoiseLevelInitCmd = _p12._1;
+	var _p13 = _user$project$Slider$initialise(
 		{
 			name: 'Rain Intensity',
 			value: 60,
 			max: 200,
-			min: 1,
+			min: 0,
 			updateCommand: function (n) {
 				return _elm_lang$core$Platform_Cmd$none;
 			},
-			quant: true
+			quant: true,
+			containerSize: {height: 70, width: size.width},
+			grabbed: false,
+			mousePos: {x: 0, y: 0}
 		});
-	var rainIntensitySlider = _p4._0;
-	var rainIntensityInitCmd = _p4._1;
-	var _p5 = _user$project$Slider$initialise(
+	var rainIntensitySlider = _p13._0;
+	var rainIntensityInitCmd = _p13._1;
+	var _p14 = _user$project$Slider$initialise(
 		{
 			name: 'Decay Time',
 			value: 1.78,
@@ -9595,24 +9746,16 @@ var _user$project$Sliders$init = function () {
 			updateCommand: function (n) {
 				return _elm_lang$core$Platform_Cmd$none;
 			},
-			quant: false
+			quant: false,
+			containerSize: {height: 70, width: size.width},
+			grabbed: false,
+			mousePos: {x: 0, y: 0}
 		});
-	var decayTimeSlider = _p5._0;
-	var decayTimeInitCmd = _p5._1;
+	var decayTimeSlider = _p14._0;
+	var decayTimeInitCmd = _p14._1;
 	return {
 		ctor: '_Tuple2',
-		_0: {
-			decayTime: decayTimeSlider,
-			rainIntensity: rainIntensitySlider,
-			backgroundNoiseLevel: backgroundNoiseLevelSlider,
-			dropLevel: dropLevelSlider,
-			reverbLevel: reverbLevelSlider,
-			masterVolume: masterVolumeSlider,
-			activeSlider: _user$project$Sliders$ActiveSliderGetter(
-				function (m) {
-					return _elm_lang$core$Maybe$Nothing;
-				})
-		},
+		_0: {decayTime: decayTimeSlider, rainIntensity: rainIntensitySlider, backgroundNoiseLevel: backgroundNoiseLevelSlider, dropLevel: dropLevelSlider, reverbLevel: reverbLevelSlider, masterVolume: masterVolumeSlider, activeSlider: _elm_lang$core$Maybe$Nothing, containerSize: size},
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -9624,15 +9767,136 @@ var _user$project$Sliders$init = function () {
 					A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$MasterVolume, masterVolumeInitCmd)
 				]))
 	};
-}();
+};
+var _user$project$Sliders$mouseOverWhichSlider = F2(
+	function (pos, model) {
+		return (_elm_lang$core$Native_Utils.cmp(pos.y, 1 * _user$project$Sliders$sliderSep) < 0) ? _elm_lang$core$Maybe$Just(
+			_user$project$Sliders$SliderHandle(
+				{
+					getter: function (_) {
+						return _.decayTime;
+					},
+					setter: F2(
+						function (m, s) {
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{decayTime: s});
+						}),
+					msg: _user$project$Sliders$DecayTime,
+					relativePos: {x: 0, y: 0}
+				})) : ((_elm_lang$core$Native_Utils.cmp(pos.y, 2 * _user$project$Sliders$sliderSep) < 0) ? _elm_lang$core$Maybe$Just(
+			_user$project$Sliders$SliderHandle(
+				{
+					getter: function (_) {
+						return _.rainIntensity;
+					},
+					setter: F2(
+						function (m, s) {
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{rainIntensity: s});
+						}),
+					msg: _user$project$Sliders$RainIntensity,
+					relativePos: {x: 0, y: 1 * _user$project$Sliders$sliderSep}
+				})) : ((_elm_lang$core$Native_Utils.cmp(pos.y, 3 * _user$project$Sliders$sliderSep) < 0) ? _elm_lang$core$Maybe$Just(
+			_user$project$Sliders$SliderHandle(
+				{
+					getter: function (_) {
+						return _.backgroundNoiseLevel;
+					},
+					setter: F2(
+						function (m, s) {
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{backgroundNoiseLevel: s});
+						}),
+					msg: _user$project$Sliders$BackgroundNoiseLevel,
+					relativePos: {x: 0, y: 2 * _user$project$Sliders$sliderSep}
+				})) : ((_elm_lang$core$Native_Utils.cmp(pos.y, 4 * _user$project$Sliders$sliderSep) < 0) ? _elm_lang$core$Maybe$Just(
+			_user$project$Sliders$SliderHandle(
+				{
+					getter: function (_) {
+						return _.dropLevel;
+					},
+					setter: F2(
+						function (m, s) {
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{dropLevel: s});
+						}),
+					msg: _user$project$Sliders$DropLevel,
+					relativePos: {x: 0, y: 3 * _user$project$Sliders$sliderSep}
+				})) : ((_elm_lang$core$Native_Utils.cmp(pos.y, 5 * _user$project$Sliders$sliderSep) < 0) ? _elm_lang$core$Maybe$Just(
+			_user$project$Sliders$SliderHandle(
+				{
+					getter: function (_) {
+						return _.reverbLevel;
+					},
+					setter: F2(
+						function (m, s) {
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{reverbLevel: s});
+						}),
+					msg: _user$project$Sliders$ReverbLevel,
+					relativePos: {x: 0, y: 4 * _user$project$Sliders$sliderSep}
+				})) : ((_elm_lang$core$Native_Utils.cmp(pos.y, 6 * _user$project$Sliders$sliderSep) < 0) ? _elm_lang$core$Maybe$Just(
+			_user$project$Sliders$SliderHandle(
+				{
+					getter: function (_) {
+						return _.masterVolume;
+					},
+					setter: F2(
+						function (m, s) {
+							return _elm_lang$core$Native_Utils.update(
+								m,
+								{masterVolume: s});
+						}),
+					msg: _user$project$Sliders$MasterVolume,
+					relativePos: {x: 0, y: 5 * _user$project$Sliders$sliderSep}
+				})) : _elm_lang$core$Maybe$Nothing)))));
+	});
+var _user$project$Sliders$handleMouseDown = F2(
+	function (pos, model) {
+		var sliderHandleWrapped = A2(_user$project$Sliders$mouseOverWhichSlider, pos, model);
+		var _p15 = sliderHandleWrapped;
+		if (_p15.ctor === 'Just') {
+			var _p17 = _p15._0._0;
+			var _p16 = A2(
+				_user$project$Slider$update,
+				_user$project$Slider$MouseDown(
+					A2(
+						_user$project$Sliders$relativePos,
+						pos,
+						_user$project$Sliders$SliderHandle(_p17))),
+				_p17.getter(model));
+			var updatedSliderModel = _p16._0;
+			var sliderCmd = _p16._1;
+			return {
+				ctor: '_Tuple2',
+				_0: A2(
+					_p17.setter,
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							activeSlider: _elm_lang$core$Maybe$Just(
+								_user$project$Sliders$SliderHandle(_p17))
+						}),
+					updatedSliderModel),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
 var _user$project$Sliders$update = F2(
 	function (sliderMsg, model) {
-		var _p6 = sliderMsg;
-		switch (_p6.ctor) {
+		var _p18 = sliderMsg;
+		switch (_p18.ctor) {
 			case 'DecayTime':
-				var _p7 = A2(_user$project$Slider$update, _p6._0, model.decayTime);
-				var updatedSliderModel = _p7._0;
-				var sliderCmd = _p7._1;
+				var _p19 = A2(_user$project$Slider$update, _p18._0, model.decayTime);
+				var updatedSliderModel = _p19._0;
+				var sliderCmd = _p19._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9641,9 +9905,9 @@ var _user$project$Sliders$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$DecayTime, sliderCmd)
 				};
 			case 'RainIntensity':
-				var _p8 = A2(_user$project$Slider$update, _p6._0, model.rainIntensity);
-				var updatedSliderModel = _p8._0;
-				var sliderCmd = _p8._1;
+				var _p20 = A2(_user$project$Slider$update, _p18._0, model.rainIntensity);
+				var updatedSliderModel = _p20._0;
+				var sliderCmd = _p20._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9652,9 +9916,9 @@ var _user$project$Sliders$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$RainIntensity, sliderCmd)
 				};
 			case 'BackgroundNoiseLevel':
-				var _p9 = A2(_user$project$Slider$update, _p6._0, model.backgroundNoiseLevel);
-				var updatedSliderModel = _p9._0;
-				var sliderCmd = _p9._1;
+				var _p21 = A2(_user$project$Slider$update, _p18._0, model.backgroundNoiseLevel);
+				var updatedSliderModel = _p21._0;
+				var sliderCmd = _p21._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9663,9 +9927,9 @@ var _user$project$Sliders$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$BackgroundNoiseLevel, sliderCmd)
 				};
 			case 'DropLevel':
-				var _p10 = A2(_user$project$Slider$update, _p6._0, model.dropLevel);
-				var updatedSliderModel = _p10._0;
-				var sliderCmd = _p10._1;
+				var _p22 = A2(_user$project$Slider$update, _p18._0, model.dropLevel);
+				var updatedSliderModel = _p22._0;
+				var sliderCmd = _p22._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9674,9 +9938,9 @@ var _user$project$Sliders$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$DropLevel, sliderCmd)
 				};
 			case 'ReverbLevel':
-				var _p11 = A2(_user$project$Slider$update, _p6._0, model.reverbLevel);
-				var updatedSliderModel = _p11._0;
-				var sliderCmd = _p11._1;
+				var _p23 = A2(_user$project$Slider$update, _p18._0, model.reverbLevel);
+				var updatedSliderModel = _p23._0;
+				var sliderCmd = _p23._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9685,9 +9949,9 @@ var _user$project$Sliders$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$ReverbLevel, sliderCmd)
 				};
 			case 'MasterVolume':
-				var _p12 = A2(_user$project$Slider$update, _p6._0, model.masterVolume);
-				var updatedSliderModel = _p12._0;
-				var sliderCmd = _p12._1;
+				var _p24 = A2(_user$project$Slider$update, _p18._0, model.masterVolume);
+				var updatedSliderModel = _p24._0;
+				var sliderCmd = _p24._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -9696,17 +9960,16 @@ var _user$project$Sliders$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Sliders$MasterVolume, sliderCmd)
 				};
 			case 'MouseMove':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return A2(_user$project$Sliders$handleMouseMove, _p18._0, model);
 			case 'MouseDown':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return A2(_user$project$Sliders$handleMouseDown, _p18._0, model);
 			case 'MouseUp':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return A2(_user$project$Sliders$handleMouseUp, _p18._0, model);
 			default:
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 var _user$project$Sliders$view = function (model) {
-	var separation = 70;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -9718,7 +9981,7 @@ var _user$project$Sliders$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(
-						A2(_user$project$Sliders$sliderPositioning, 0, 0 * separation))
+						A2(_user$project$Sliders$sliderPositioning, 0, 0 * _user$project$Sliders$sliderSep))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -9732,7 +9995,7 @@ var _user$project$Sliders$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(
-						A2(_user$project$Sliders$sliderPositioning, 0, 1 * separation))
+						A2(_user$project$Sliders$sliderPositioning, 0, 1 * _user$project$Sliders$sliderSep))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -9746,7 +10009,7 @@ var _user$project$Sliders$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(
-						A2(_user$project$Sliders$sliderPositioning, 0, 2 * separation))
+						A2(_user$project$Sliders$sliderPositioning, 0, 2 * _user$project$Sliders$sliderSep))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -9760,7 +10023,7 @@ var _user$project$Sliders$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(
-						A2(_user$project$Sliders$sliderPositioning, 0, 3 * separation))
+						A2(_user$project$Sliders$sliderPositioning, 0, 3 * _user$project$Sliders$sliderSep))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -9774,7 +10037,7 @@ var _user$project$Sliders$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(
-						A2(_user$project$Sliders$sliderPositioning, 0, 4 * separation))
+						A2(_user$project$Sliders$sliderPositioning, 0, 4 * _user$project$Sliders$sliderSep))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -9788,7 +10051,7 @@ var _user$project$Sliders$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$style(
-						A2(_user$project$Sliders$sliderPositioning, 0, 5 * separation))
+						A2(_user$project$Sliders$sliderPositioning, 0, 5 * _user$project$Sliders$sliderSep))
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -9823,26 +10086,36 @@ var _user$project$Schedule$drops = F3(
 				return _elm_lang$core$Native_List.fromArray(
 					[]);
 			} else {
-				if (_elm_lang$core$Native_Utils.cmp(nextNoteTime, timerTick) < 1) {
-					var _v0 = timerTick,
-						_v1 = timerTick + (1 / model.sliders.rainIntensity.value),
-						_v2 = model;
-					timerTick = _v0;
-					nextNoteTime = _v1;
-					model = _v2;
-					continue drops;
+				if (_elm_lang$core$Native_Utils.eq(model.sliders.rainIntensity.value, 0)) {
+					return _elm_lang$core$Native_List.fromArray(
+						[]);
 				} else {
-					return A2(
-						_elm_lang$core$Basics_ops['++'],
-						A3(_user$project$Schedule$drops, timerTick, nextNoteTime + (1 / model.sliders.rainIntensity.value), model),
-						_elm_lang$core$Native_List.fromArray(
-							[nextNoteTime]));
+					if (_elm_lang$core$Native_Utils.cmp(nextNoteTime, timerTick) < 1) {
+						var _v0 = timerTick,
+							_v1 = timerTick + (1 / model.sliders.rainIntensity.value),
+							_v2 = model;
+						timerTick = _v0;
+						nextNoteTime = _v1;
+						model = _v2;
+						continue drops;
+					} else {
+						return A2(
+							_elm_lang$core$Basics_ops['++'],
+							A3(_user$project$Schedule$drops, timerTick, nextNoteTime + (1 / model.sliders.rainIntensity.value), model),
+							_elm_lang$core$Native_List.fromArray(
+								[nextNoteTime]));
+					}
 				}
 			}
 		}
 	});
 var _user$project$Schedule$interval = 200;
 
+var _user$project$Update$sliderMargin = {x: 30, y: 40};
+var _user$project$Update$relativePos = F2(
+	function (pos, model) {
+		return {x: pos.x - _user$project$Update$sliderMargin.x, y: pos.y - _user$project$Update$sliderMargin.y};
+	});
 var _user$project$Update$ResizeWindow = function (a) {
 	return {ctor: 'ResizeWindow', _0: a};
 };
@@ -9863,7 +10136,8 @@ var _user$project$Update$SliderChange = function (a) {
 	return {ctor: 'SliderChange', _0: a};
 };
 var _user$project$Update$init = function () {
-	var _p0 = _user$project$Sliders$init;
+	var _p0 = _user$project$Sliders$init(
+		{height: 800, width: 400});
 	var initSliders = _p0._0;
 	var initSlidersCmd = _p0._1;
 	return {
@@ -9874,7 +10148,7 @@ var _user$project$Update$init = function () {
 			true,
 			0,
 			true,
-			{height: 100, width: 100}),
+			{height: 800, width: 400}),
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -9967,12 +10241,11 @@ var _user$project$Update$update = F2(
 						{visibility: _p1._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			case 'ResizeWindow':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'MouseMove':
 				var _p4 = A2(
 					_user$project$Sliders$update,
-					_user$project$Sliders$MouseMove(_p1._0),
+					_user$project$Sliders$MouseMove(
+						A2(_user$project$Update$relativePos, _p1._0, model)),
 					model.sliders);
 				var updatedSliders = _p4._0;
 				var slidersCmd = _p4._1;
@@ -9986,7 +10259,8 @@ var _user$project$Update$update = F2(
 			case 'MouseDown':
 				var _p5 = A2(
 					_user$project$Sliders$update,
-					_user$project$Sliders$MouseDown(_p1._0),
+					_user$project$Sliders$MouseDown(
+						A2(_user$project$Update$relativePos, _p1._0, model)),
 					model.sliders);
 				var updatedSliders = _p5._0;
 				var slidersCmd = _p5._1;
@@ -9997,10 +10271,11 @@ var _user$project$Update$update = F2(
 						{sliders: updatedSliders}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
 				};
-			default:
+			case 'MouseUp':
 				var _p6 = A2(
 					_user$project$Sliders$update,
-					_user$project$Sliders$MouseUp(_p1._0),
+					_user$project$Sliders$MouseUp(
+						A2(_user$project$Update$relativePos, _p1._0, model)),
 					model.sliders);
 				var updatedSliders = _p6._0;
 				var slidersCmd = _p6._1;
@@ -10011,11 +10286,18 @@ var _user$project$Update$update = F2(
 						{sliders: updatedSliders}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
 				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{windowSize: _p1._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 		}
 	});
 
 var _user$project$View$view = function (model) {
-	var margin = {x: 30, y: 30};
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -10027,12 +10309,12 @@ var _user$project$View$view = function (model) {
 						{
 						ctor: '_Tuple2',
 						_0: 'left',
-						_1: _elm_lang$core$Basics$toString(margin.x)
+						_1: _elm_lang$core$Basics$toString(_user$project$Update$sliderMargin.x)
 					},
 						{
 						ctor: '_Tuple2',
 						_0: 'top',
-						_1: _elm_lang$core$Basics$toString(margin.y)
+						_1: _elm_lang$core$Basics$toString(_user$project$Update$sliderMargin.y)
 					}
 					]))
 			]),
@@ -10071,6 +10353,32 @@ var _user$project$View$view = function (model) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html$text('Rain On/Off')
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$style(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+								{ctor: '_Tuple2', _0: 'left', _1: '320px'},
+								{ctor: '_Tuple2', _0: 'top', _1: '40px'}
+							]))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$a,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$href('http://www.github.com/rskew/rainmask.com'),
+								_elm_lang$html$Html_Attributes$target('_blank')
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Source')
 							]))
 					]))
 			]));

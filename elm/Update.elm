@@ -1,5 +1,6 @@
 module Update exposing ( Msg (..)
                        , update
+                       , sliderMargin
                        , init
                        )
 
@@ -104,15 +105,10 @@ update msg model =
       , Cmd.none
       )
 
-    ResizeWindow size ->
-      ( model
-      , Cmd.none
-      )
-
     MouseMove pos ->
       let
         ( updatedSliders, slidersCmd ) =
-            Sliders.update (Sliders.MouseMove pos) model.sliders
+            Sliders.update (Sliders.MouseMove <| relativePos pos model) model.sliders
       in
         ( { model | sliders = updatedSliders }
         , Cmd.map SliderChange slidersCmd
@@ -121,7 +117,7 @@ update msg model =
     MouseDown pos ->
       let
         ( updatedSliders, slidersCmd ) =
-            Sliders.update (Sliders.MouseDown pos) model.sliders
+            Sliders.update (Sliders.MouseDown <| relativePos pos model) model.sliders
       in
         ( { model | sliders = updatedSliders }
         , Cmd.map SliderChange slidersCmd
@@ -130,25 +126,39 @@ update msg model =
     MouseUp pos ->
       let
         ( updatedSliders, slidersCmd ) =
-            Sliders.update (Sliders.MouseUp pos) model.sliders
+            Sliders.update (Sliders.MouseUp <| relativePos pos model) model.sliders
       in
         ( { model | sliders = updatedSliders }
         , Cmd.map SliderChange slidersCmd
         )
+
+    ResizeWindow newSize ->
+      ( { model | windowSize = newSize }
+      , Cmd.none
+      )
+
+
+relativePos : IntVector2 -> Model -> IntVector2
+relativePos pos model =
+  { x = pos.x - sliderMargin.x, y = pos.y - sliderMargin.y }
+
+
+sliderMargin : IntVector2
+sliderMargin = { x = 30, y = 40 }
 
 
 init : ( Model, Cmd Msg )
 init =
   let
     ( initSliders, initSlidersCmd ) =
-        Sliders.init
+        Sliders.init { height = 800, width = 400 }
   in
     ( Model
         initSliders
         True
         0
         True
-        { height = 100, width = 100 }
+        { height = 800, width = 400 }
     , Cmd.batch [ Cmd.map SliderChange initSlidersCmd
                 -- initialise timer
                 , setTimerPort Schedule.interval

@@ -1,11 +1,12 @@
 module Slider exposing ( Model
                        , initialise
-                       , Msg(UpdateValue)
+                       , Msg(..)
                        , update
                        , view
                        )
 
 import Utils exposing ( IntVector2
+                      , ContainerSize
                       )
 
 
@@ -13,6 +14,7 @@ import Html exposing (Html, input, text, div)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import String
+import Mouse
 
 -- MODEL
 
@@ -23,6 +25,9 @@ type alias Model =
   , min : Float
   , updateCommand : Float -> Cmd Msg
   , quant : Bool
+  , containerSize : ContainerSize
+  , grabbed : Bool
+  , mousePos : IntVector2
   }
 
 initialise : Model -> (Model, Cmd Msg)
@@ -34,34 +39,104 @@ initialise mdl =
 
 -- UPDATE
 
-type Msg = UpdateValue String
+type Msg
+  = UpdateValue  Float
+  | MouseMove    IntVector2
+  | MouseUp      IntVector2
+  | MouseDown    IntVector2
+  | ResizeWindow ContainerSize
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    UpdateValue str ->
+    UpdateValue float ->
       let
-        try = String.toFloat str
+        newVal = if model.quant then
+                   quantise float
+                 else 
+                   float
       in
-        case try of
-          Ok num ->
-            let
-              sliderVal = if model.quant then
-                            quantise <| scaleSliderVal model num
-                          else 
-                            scaleSliderVal model num
+        ( { model | value = newVal }
+        , model.updateCommand newVal
+        )
+      
+    --UpdateValue str ->
+    --  let
+    --    try = String.toFloat str
+    --  in
+    --    case try of
+    --      Ok num ->
+    --        let
+    --          sliderVal = if model.quant then
+    --                        quantise <| scaleSliderVal model num
+    --                      else 
+    --                        scaleSliderVal model num
 
-            in
-              ( { model | value = sliderVal }
-              , model.updateCommand sliderVal
-              )
-          Err msg ->
-            ( { model | value = 9999 }
-            , Cmd.none
+    --        in
+    --          ( { model | value = sliderVal }
+    --          , model.updateCommand sliderVal
+    --          )
+    --      Err msg ->
+    --        ( { model | value = 9999 }
+    --        , Cmd.none
+    --        )
+
+    MouseMove pos ->
+      case model.grabbed of
+        True ->
+          let
+            scalePixelToVal = (model.max - model.min) / (toFloat (model.containerSize.width - 50))
+            inputVal = Basics.max (Basics.min (model.value + scalePixelToVal * 
+                                                (toFloat (pos.x - model.mousePos.x)))
+                                            model.max)
+                                model.min
+            newVal = if model.quant then
+                       quantise inputVal
+                     else
+                       inputVal
+          in
+            --update (UpdateValue newVal) model
+            ( { model | value = newVal
+                      , mousePos = pos
+                      }
+            , model.updateCommand newVal
             )
+        False ->
+          ( model
+          , Cmd.none
+          )
+
+    MouseDown pos ->
+      if isOnSlider pos model then
+        ( { model | grabbed = True
+                  , mousePos = pos }
+        , Cmd.none
+        )
+      else
+        ( model
+        , Cmd.none
+        )
+
+    MouseUp pos ->
+      ( { model | grabbed = False }
+      , Cmd.none
+      )
+
+    ResizeWindow newSize ->
+      ( { model | containerSize = newSize }
+      , Cmd.none
+      )
 
 
+isOnSlider : IntVector2 -> Model -> Bool
+isOnSlider pos model =
+  if pos.x > 8 && pos.x < 
+                    (round ((model.value/model.max) * (toFloat (model.containerSize.width - 50))) + 52)
+        && pos.y > 58 && pos.y < 72 then
+    True
+  else
+    False
 
 -- VIEW
 
@@ -72,8 +147,11 @@ view model =
       [ 
         ("position" , "absolute")
       , ("left"     , "10px")
-      , ("top"      , "40px")
-      , ("width"    , "400px")
+      , ("top"      , "60px")
+      --, ("width"    , toString (model.containerSize.width - 10) ++ "px")
+      , ("width"    , (toString <|
+                           round ((model.value/model.max) * (toFloat (model.containerSize.width - 50))) + 10)
+                      ++ "px")
       , ("height"   , "10px")
       , ("border"   , "1px solid #FFFFFF")
       , ("background-color", "#303030")
@@ -81,8 +159,10 @@ view model =
     sliderHandleStyle =
       [ 
         ("position" , "absolute")
-      , ("left"     , "410px")
-      , ("top"      , "40px")
+      , ("left"     , (toString <|
+                        round ((model.value/model.max) * (toFloat (model.containerSize.width - 50))) + 10)
+                       ++ "px")
+      , ("top"      , "60px")
       , ("width"    , "40px")
       , ("height"   , "10px")
       , ("border"   , "1px solid #FFFFFF")
@@ -99,32 +179,32 @@ view model =
             ]
           [ text <| toString model.value
           ]
-      , div []
-          [ input
-            [ type' "range"
-            , Html.Attributes.min "0"
-            , Html.Attributes.max <| toString sliderMax
-            --, value <| toString <| round <| scaleValToSlider model model.value
-            , value <| toString <| scaleValToSlider model model.value
-            , onInput UpdateValue
-            ] []
-          ]
+      --, div []
+      --    [ input
+      --      [ type' "range"
+      --      , Html.Attributes.min "0"
+      --      , Html.Attributes.max <| toString sliderMax
+      --      --, value <| toString <| round <| scaleValToSlider model model.value
+      --      , value <| toString <| scaleValToSlider model model.value
+      --      , onInput UpdateValue
+      --      ] []
+      --    ]
       , div [ style sliderStyle ]
           []
       , div [ style sliderHandleStyle ]
           []
       ]
 
-sliderMax : Int
-sliderMax = 1000
+--sliderMax : Int
+--sliderMax = 1000
+--
+--scaleSliderVal : Model -> Float -> Float
+--scaleSliderVal model val =
+--  val * ((model.max - model.min) / (toFloat sliderMax)) + model.min
 
-scaleSliderVal : Model -> Float -> Float
-scaleSliderVal model val =
-  val * ((model.max - model.min) / (toFloat sliderMax)) + model.min
-
-scaleValToSlider : Model -> Float -> Float
-scaleValToSlider model val =
-  (val - model.min) * ((toFloat sliderMax) / (model.max - model.min))
+--scaleValToSlider : Model -> Float -> Float
+--scaleValToSlider model val =
+--  (val - model.min) * ((toFloat sliderMax) / (model.max - model.min))
 
 quantisationRes : Int
 quantisationRes = 2

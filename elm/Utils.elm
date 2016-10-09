@@ -1,5 +1,6 @@
 module Utils exposing ( Vector3
                       , IntVector2
+                      , ContainerSize
                       , WATime
                       , JSTime
                       , unfoldr
@@ -12,6 +13,11 @@ type alias JSTime = Float
 type alias IntVector2 =
   { x : Int
   , y : Int
+  }
+
+type alias ContainerSize =
+  { height : Int
+  , width : Int
   }
 
 type alias Vector3 =

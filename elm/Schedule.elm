@@ -29,6 +29,8 @@ drops timerTick nextNoteTime model =
   in
     if nextNoteTime > timerTick + buffer then
       []
+    else if model.sliders.rainIntensity.value == 0 then
+      []
     else if nextNoteTime <= timerTick then
       (drops timerTick (timerTick + 1/model.sliders.rainIntensity.value) model)
     else
