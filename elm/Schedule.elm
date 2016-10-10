@@ -1,42 +1,34 @@
-module Schedule exposing ( drops
-                         , interval
-                         , lookahead
-                         , inactiveLookahead
+module Schedule exposing ( interval
+                         , withinLookahead
                          )
 
 import Model exposing (Model)
-import Utils exposing ( WATime
+import Utils exposing ( WebAudioTime
                       , JSTime
                       )
+
+import List
 
 
 interval : JSTime
 interval = 200
 
-lookahead : WATime
+lookahead : WebAudioTime
 lookahead = 0.4
 
-inactiveLookahead : WATime
+inactiveLookahead : WebAudioTime
 inactiveLookahead = 1.5
 
-drops : WATime -> WATime -> Model -> (List WATime)
-drops timerTick nextNoteTime model =
+
+withinLookahead : WebAudioTime -> WebAudioTime -> Model -> Bool
+withinLookahead timerTick nextDropTime model =
   let
     buffer = if model.visibility == True then
                lookahead
              else
                inactiveLookahead
   in
-    if nextNoteTime > timerTick + buffer then
-      []
-    else if model.sliders.rainIntensity.value == 0 then
-      []
-    else if nextNoteTime <= timerTick then
-      (drops timerTick (timerTick + 1/model.sliders.rainIntensity.value) model)
+    if nextDropTime < timerTick + buffer then
+      True
     else
-      (drops timerTick
-             (nextNoteTime + (1 / model.sliders.rainIntensity.value))
-             --(nextNoteTime + 0.2)
-             model)
-      ++ [ nextNoteTime ]
-      --[ timerTick + (1 / model.sliders.rainIntensity.value) ]
+      False

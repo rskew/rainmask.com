@@ -61,27 +61,6 @@ update msg model =
         , model.updateCommand newVal
         )
       
-    --UpdateValue str ->
-    --  let
-    --    try = String.toFloat str
-    --  in
-    --    case try of
-    --      Ok num ->
-    --        let
-    --          sliderVal = if model.quant then
-    --                        quantise <| scaleSliderVal model num
-    --                      else 
-    --                        scaleSliderVal model num
-
-    --        in
-    --          ( { model | value = sliderVal }
-    --          , model.updateCommand sliderVal
-    --          )
-    --      Err msg ->
-    --        ( { model | value = 9999 }
-    --        , Cmd.none
-    --        )
-
     MouseMove pos ->
       case model.grabbed of
         True ->
@@ -179,35 +158,14 @@ view model =
             ]
           [ text <| toString model.value
           ]
-      --, div []
-      --    [ input
-      --      [ type' "range"
-      --      , Html.Attributes.min "0"
-      --      , Html.Attributes.max <| toString sliderMax
-      --      --, value <| toString <| round <| scaleValToSlider model model.value
-      --      , value <| toString <| scaleValToSlider model model.value
-      --      , onInput UpdateValue
-      --      ] []
-      --    ]
       , div [ style sliderStyle ]
           []
       , div [ style sliderHandleStyle ]
           []
       ]
 
---sliderMax : Int
---sliderMax = 1000
---
---scaleSliderVal : Model -> Float -> Float
---scaleSliderVal model val =
---  val * ((model.max - model.min) / (toFloat sliderMax)) + model.min
-
---scaleValToSlider : Model -> Float -> Float
---scaleValToSlider model val =
---  (val - model.min) * ((toFloat sliderMax) / (model.max - model.min))
-
 quantisationRes : Int
-quantisationRes = 2
+quantisationRes = 1
 
 quantise : Float -> Float
 quantise flt =

@@ -1,4 +1,4 @@
-port module Cmds exposing ( raindropPort
+port module Cmds exposing ( rainDropPort
                           , setTimerPort
                           , backgroundNoiseLevelPort
                           , togglePort
@@ -8,11 +8,12 @@ port module Cmds exposing ( raindropPort
                           )
 
 import Utils exposing ( Vector3
-                      , WATime
+                      , WebAudioTime
                       , JSTime
                       )
+import Rain exposing (RainDrop)
 
-port raindropPort : (WATime, Float, Vector3) -> Cmd msg
+port rainDropPort : RainDrop -> Cmd msg
 
 port setTimerPort : Float -> Cmd msg
 

@@ -2789,6 +2789,23 @@ var _ccapndave$elm_update_extra$Update_Extra$sequence = F3(
 		return A3(_elm_lang$core$List$foldl, foldUpdate, init, msgs);
 	});
 
+var _ccapndave$elm_update_extra$Update_Extra_Infix$pipeUpdate = F2(
+	function (_p0, update) {
+		var _p1 = _p0;
+		var _p2 = update(_p1._0);
+		var model$ = _p2._0;
+		var cmd$ = _p2._1;
+		return {
+			ctor: '_Tuple2',
+			_0: model$,
+			_1: _elm_lang$core$Platform_Cmd$batch(
+				_elm_lang$core$Native_List.fromArray(
+					[_p1._1, cmd$]))
+		};
+	});
+var _ccapndave$elm_update_extra$Update_Extra_Infix_ops = _ccapndave$elm_update_extra$Update_Extra_Infix_ops || {};
+_ccapndave$elm_update_extra$Update_Extra_Infix_ops[':>'] = _ccapndave$elm_update_extra$Update_Extra_Infix$pipeUpdate;
+
 //import Native.List //
 
 var _elm_lang$core$Native_Array = function() {
@@ -9272,34 +9289,6 @@ var _elm_lang$window$Window$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
 
-var _user$project$Utils$unfoldr = F2(
-	function (f, b) {
-		var unfoldr$ = F3(
-			function (z, f, b) {
-				unfoldr$:
-				while (true) {
-					var _p0 = f(b);
-					if (_p0.ctor === 'Nothing') {
-						return z;
-					} else {
-						var _v1 = A2(_elm_lang$core$List_ops['::'], _p0._0._0, z),
-							_v2 = f,
-							_v3 = _p0._0._1;
-						z = _v1;
-						f = _v2;
-						b = _v3;
-						continue unfoldr$;
-					}
-				}
-			});
-		return _elm_lang$core$List$reverse(
-			A3(
-				unfoldr$,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				f,
-				b));
-	});
 var _user$project$Utils$IntVector2 = F2(
 	function (a, b) {
 		return {x: a, y: b};
@@ -9313,14 +9302,62 @@ var _user$project$Utils$Vector3 = F3(
 		return {x: a, y: b, z: c};
 	});
 
-var _user$project$Cmds$raindropPort = _elm_lang$core$Native_Platform.outgoingPort(
-	'raindropPort',
+var _user$project$Rain$randVector3Generator = A4(
+	_elm_lang$core$Random$map3,
+	_user$project$Utils$Vector3,
+	A2(_elm_lang$core$Random$float, -20, 20),
+	A2(_elm_lang$core$Random$float, -20, 20),
+	A2(_elm_lang$core$Random$float, 5, 10));
+var _user$project$Rain$queueNextDrop = F2(
+	function (rainDrop, rainDropQueue) {
+		var _p0 = rainDropQueue;
+		if (_p0.ctor === '::') {
+			var _p2 = _p0._1;
+			var _p1 = _p0._0;
+			return (_elm_lang$core$Native_Utils.cmp(rainDrop.startTime, _p1.startTime) < 0) ? A2(
+				_elm_lang$core$List_ops['::'],
+				rainDrop,
+				A2(_elm_lang$core$List_ops['::'], _p1, _p2)) : A2(
+				_elm_lang$core$List_ops['::'],
+				_p1,
+				A2(_user$project$Rain$queueNextDrop, rainDrop, _p2));
+		} else {
+			return _elm_lang$core$Native_List.fromArray(
+				[rainDrop]);
+		}
+	});
+var _user$project$Rain$nextPoissonArrival = F2(
+	function (thisDropTime, timeConst) {
+		return A2(
+			_elm_lang$core$Random$map,
+			function (t) {
+				return thisDropTime + ((-1.0 / timeConst) * A2(_elm_lang$core$Basics$logBase, _elm_lang$core$Basics$e, 1 - t));
+			},
+			A2(_elm_lang$core$Random$float, 0, 1));
+	});
+var _user$project$Rain$RainDrop = F5(
+	function (a, b, c, d, e) {
+		return {channel: a, decayTime: b, startTime: c, nextDropTime: d, pan: e};
+	});
+var _user$project$Rain$rainDropGenerator = F3(
+	function (oldDrop, timeConst, decayTime) {
+		return A3(
+			_elm_lang$core$Random$map2,
+			A3(_user$project$Rain$RainDrop, oldDrop.channel, decayTime, oldDrop.nextDropTime),
+			A2(_user$project$Rain$nextPoissonArrival, oldDrop.nextDropTime, timeConst),
+			_user$project$Rain$randVector3Generator);
+	});
+
+var _user$project$Cmds$rainDropPort = _elm_lang$core$Native_Platform.outgoingPort(
+	'rainDropPort',
 	function (v) {
-		return [
-			v._0,
-			v._1,
-			{x: v._2.x, y: v._2.y, z: v._2.z}
-		];
+		return {
+			channel: v.channel,
+			decayTime: v.decayTime,
+			startTime: v.startTime,
+			nextDropTime: v.nextDropTime,
+			pan: {x: v.pan.x, y: v.pan.y, z: v.pan.z}
+		};
 	});
 var _user$project$Cmds$setTimerPort = _elm_lang$core$Native_Platform.outgoingPort(
 	'setTimerPort',
@@ -9353,7 +9390,7 @@ var _user$project$Cmds$togglePort = _elm_lang$core$Native_Platform.outgoingPort(
 		return v;
 	});
 
-var _user$project$Slider$quantisationRes = 2;
+var _user$project$Slider$quantisationRes = 1;
 var _user$project$Slider$quantise = function (flt) {
 	var q = _elm_lang$core$Basics$toFloat(_user$project$Slider$quantisationRes);
 	return A2(
@@ -9710,8 +9747,8 @@ var _user$project$Sliders$init = function (size) {
 	var _p12 = _user$project$Slider$initialise(
 		{
 			name: 'Background Noise Level',
-			value: 0,
-			max: 0.3,
+			value: 0.2,
+			max: 1,
 			min: 0,
 			updateCommand: _user$project$Cmds$backgroundNoiseLevelPort,
 			quant: false,
@@ -9724,9 +9761,9 @@ var _user$project$Sliders$init = function (size) {
 	var _p13 = _user$project$Slider$initialise(
 		{
 			name: 'Rain Intensity',
-			value: 60,
+			value: 30,
 			max: 200,
-			min: 0,
+			min: 1,
 			updateCommand: function (n) {
 				return _elm_lang$core$Platform_Cmd$none;
 			},
@@ -10063,51 +10100,17 @@ var _user$project$Sliders$view = function (model) {
 			]));
 };
 
-var _user$project$Model$Model = F5(
-	function (a, b, c, d, e) {
-		return {sliders: a, on: b, nextDropTime: c, visibility: d, windowSize: e};
+var _user$project$Model$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {sliders: a, on: b, rainDropQueue: c, timeConst: d, visibility: e, windowSize: f};
 	});
-
-var _user$project$RainParams$randVector3Gen = A4(
-	_elm_lang$core$Random$map3,
-	_user$project$Utils$Vector3,
-	A2(_elm_lang$core$Random$float, -20, 20),
-	A2(_elm_lang$core$Random$float, -20, 20),
-	A2(_elm_lang$core$Random$float, 5, 10));
 
 var _user$project$Schedule$inactiveLookahead = 1.5;
 var _user$project$Schedule$lookahead = 0.4;
-var _user$project$Schedule$drops = F3(
-	function (timerTick, nextNoteTime, model) {
-		drops:
-		while (true) {
-			var buffer = _elm_lang$core$Native_Utils.eq(model.visibility, true) ? _user$project$Schedule$lookahead : _user$project$Schedule$inactiveLookahead;
-			if (_elm_lang$core$Native_Utils.cmp(nextNoteTime, timerTick + buffer) > 0) {
-				return _elm_lang$core$Native_List.fromArray(
-					[]);
-			} else {
-				if (_elm_lang$core$Native_Utils.eq(model.sliders.rainIntensity.value, 0)) {
-					return _elm_lang$core$Native_List.fromArray(
-						[]);
-				} else {
-					if (_elm_lang$core$Native_Utils.cmp(nextNoteTime, timerTick) < 1) {
-						var _v0 = timerTick,
-							_v1 = timerTick + (1 / model.sliders.rainIntensity.value),
-							_v2 = model;
-						timerTick = _v0;
-						nextNoteTime = _v1;
-						model = _v2;
-						continue drops;
-					} else {
-						return A2(
-							_elm_lang$core$Basics_ops['++'],
-							A3(_user$project$Schedule$drops, timerTick, nextNoteTime + (1 / model.sliders.rainIntensity.value), model),
-							_elm_lang$core$Native_List.fromArray(
-								[nextNoteTime]));
-					}
-				}
-			}
-		}
+var _user$project$Schedule$withinLookahead = F3(
+	function (timerTick, nextDropTime, model) {
+		var buffer = _elm_lang$core$Native_Utils.eq(model.visibility, true) ? _user$project$Schedule$lookahead : _user$project$Schedule$inactiveLookahead;
+		return (_elm_lang$core$Native_Utils.cmp(nextDropTime, timerTick + buffer) < 0) ? true : false;
 	});
 var _user$project$Schedule$interval = 200;
 
@@ -10142,11 +10145,42 @@ var _user$project$Update$init = function () {
 	var initSlidersCmd = _p0._1;
 	return {
 		ctor: '_Tuple2',
-		_0: A5(
+		_0: A6(
 			_user$project$Model$Model,
 			initSliders,
 			true,
-			0,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					channel: 0,
+					decayTime: 1,
+					startTime: 1,
+					nextDropTime: 1.1,
+					pan: A3(_user$project$Utils$Vector3, -5, 0, 0)
+				},
+					{
+					channel: 1,
+					decayTime: 1,
+					startTime: 2,
+					nextDropTime: 2.1,
+					pan: A3(_user$project$Utils$Vector3, 2, 0, 0)
+				},
+					{
+					channel: 2,
+					decayTime: 1,
+					startTime: 3,
+					nextDropTime: 3.1,
+					pan: A3(_user$project$Utils$Vector3, 2, 0, 0)
+				},
+					{
+					channel: 3,
+					decayTime: 1,
+					startTime: 4,
+					nextDropTime: 4.1,
+					pan: A3(_user$project$Utils$Vector3, 5, 0, 0)
+				}
+				]),
+			20,
 			true,
 			{height: 800, width: 400}),
 		_1: _elm_lang$core$Platform_Cmd$batch(
@@ -10160,58 +10194,63 @@ var _user$project$Update$init = function () {
 var _user$project$Update$ScheduleDrops = function (a) {
 	return {ctor: 'ScheduleDrops', _0: a};
 };
-var _user$project$Update$GenerateDrop = function (a) {
-	return {ctor: 'GenerateDrop', _0: a};
-};
-var _user$project$Update$Drop = F2(
+var _user$project$Update$QueueDrop = F2(
 	function (a, b) {
-		return {ctor: 'Drop', _0: a, _1: b};
+		return {ctor: 'QueueDrop', _0: a, _1: b};
 	});
+var _user$project$Update$FireDrop = function (a) {
+	return {ctor: 'FireDrop', _0: a};
+};
 var _user$project$Update$update = F2(
 	function (msg, model) {
 		var _p1 = msg;
 		switch (_p1.ctor) {
-			case 'Drop':
+			case 'FireDrop':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: model.on ? _user$project$Cmds$raindropPort(
-						{ctor: '_Tuple3', _0: _p1._0, _1: model.sliders.decayTime.value, _2: _p1._1}) : _elm_lang$core$Platform_Cmd$none
+					_1: model.on ? _user$project$Cmds$rainDropPort(_p1._0) : _elm_lang$core$Platform_Cmd$none
 				};
-			case 'GenerateDrop':
-				return {
-					ctor: '_Tuple2',
-					_0: model,
-					_1: A2(
-						_elm_lang$core$Random$generate,
-						_user$project$Update$Drop(_p1._0),
-						_user$project$RainParams$randVector3Gen)
-				};
+			case 'QueueDrop':
+				return A2(
+					_ccapndave$elm_update_extra$Update_Extra_Infix_ops[':>'],
+					{
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								rainDropQueue: A2(_user$project$Rain$queueNextDrop, _p1._1, model.rainDropQueue)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					},
+					_user$project$Update$update(
+						_user$project$Update$ScheduleDrops(_p1._0)));
 			case 'ScheduleDrops':
-				var drops = A2(
-					_elm_lang$core$List$map,
-					_user$project$Update$GenerateDrop,
-					A3(_user$project$Schedule$drops, _p1._0, model.nextDropTime, model));
-				var _p2 = _elm_lang$core$List$head(drops);
-				if ((_p2.ctor === 'Just') && (_p2._0.ctor === 'GenerateDrop')) {
-					return A3(
-						_ccapndave$elm_update_extra$Update_Extra$sequence,
-						_user$project$Update$update,
-						drops,
+				var _p4 = _p1._0;
+				var _p2 = model.rainDropQueue;
+				if (_p2.ctor === '::') {
+					var _p3 = _p2._0;
+					return A3(_user$project$Schedule$withinLookahead, _p4, _p3.startTime, model) ? A2(
+						_ccapndave$elm_update_extra$Update_Extra_Infix_ops[':>'],
 						{
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{nextDropTime: _p2._0._0}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						});
+								{rainDropQueue: _p2._1}),
+							_1: A2(
+								_elm_lang$core$Random$generate,
+								_user$project$Update$QueueDrop(_p4),
+								A3(_user$project$Rain$rainDropGenerator, _p3, model.sliders.rainIntensity.value, model.sliders.decayTime.value))
+						},
+						_user$project$Update$update(
+							_user$project$Update$FireDrop(_p3))) : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				} else {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
 			case 'SliderChange':
-				var _p3 = A2(_user$project$Sliders$update, _p1._0, model.sliders);
-				var updatedSliders = _p3._0;
-				var slidersCmd = _p3._1;
+				var _p5 = A2(_user$project$Sliders$update, _p1._0, model.sliders);
+				var updatedSliders = _p5._0;
+				var slidersCmd = _p5._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -10242,13 +10281,13 @@ var _user$project$Update$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'MouseMove':
-				var _p4 = A2(
+				var _p6 = A2(
 					_user$project$Sliders$update,
 					_user$project$Sliders$MouseMove(
 						A2(_user$project$Update$relativePos, _p1._0, model)),
 					model.sliders);
-				var updatedSliders = _p4._0;
-				var slidersCmd = _p4._1;
+				var updatedSliders = _p6._0;
+				var slidersCmd = _p6._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -10257,13 +10296,13 @@ var _user$project$Update$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
 				};
 			case 'MouseDown':
-				var _p5 = A2(
+				var _p7 = A2(
 					_user$project$Sliders$update,
 					_user$project$Sliders$MouseDown(
 						A2(_user$project$Update$relativePos, _p1._0, model)),
 					model.sliders);
-				var updatedSliders = _p5._0;
-				var slidersCmd = _p5._1;
+				var updatedSliders = _p7._0;
+				var slidersCmd = _p7._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -10272,13 +10311,13 @@ var _user$project$Update$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Update$SliderChange, slidersCmd)
 				};
 			case 'MouseUp':
-				var _p6 = A2(
+				var _p8 = A2(
 					_user$project$Sliders$update,
 					_user$project$Sliders$MouseUp(
 						A2(_user$project$Update$relativePos, _p1._0, model)),
 					model.sliders);
-				var updatedSliders = _p6._0;
-				var slidersCmd = _p6._1;
+				var updatedSliders = _p8._0;
+				var slidersCmd = _p8._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(

@@ -57,9 +57,10 @@ init size =
                           }
     ( rainIntensitySlider, rainIntensityInitCmd) =
         Slider.initialise { name = "Rain Intensity"
-                          , value = 60
+                          --, value = 60
+                          , value = 30
                           , max = 200
-                          , min = 0
+                          , min = 1
                           , updateCommand = \n -> Cmd.none
                           , quant = True
                           , containerSize = { height = 70, width = size.width }
@@ -68,9 +69,8 @@ init size =
                           }
     ( backgroundNoiseLevelSlider, backgroundNoiseLevelInitCmd ) =
         Slider.initialise { name = "Background Noise Level"
-                          --, value = 0.15
-                          , value = 0
-                          , max = 0.3
+                          , value = 0.20
+                          , max = 1
                           , min = 0
                           , updateCommand = Cmds.backgroundNoiseLevelPort
                           , quant = False

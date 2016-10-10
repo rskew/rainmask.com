@@ -8,10 +8,10 @@ import Model exposing ( Model
                       )
 import Utils exposing ( Vector3
                       , IntVector2
-                      , WATime
+                      , WebAudioTime
                       , JSTime
                       )
-import Cmds exposing ( raindropPort
+import Cmds exposing ( rainDropPort
                      , setTimerPort
                      , backgroundNoiseLevelPort
                      , togglePort
@@ -19,13 +19,18 @@ import Cmds exposing ( raindropPort
                      , reverbLevelPort
                      , masterVolumePort
                      )
-import RainParams exposing (randVector3Gen)
+import Rain exposing ( RainDrop
+                     , rainDropGenerator
+                     , queueNextDrop
+                     )
 import Sliders
-import Schedule
+import Schedule exposing ( withinLookahead
+                         )
 
 import String exposing (toFloat)
 import Random
-import Update.Extra exposing (sequence)
+import Update.Extra exposing (andThen, addCmd, sequence)
+import Update.Extra.Infix exposing ((:>))
 import List
 import Mouse exposing ( position
                       , ups
@@ -35,9 +40,9 @@ import Window
 
 
 type Msg
-  = Drop WATime Vector3
-  | GenerateDrop WATime
-  | ScheduleDrops WATime
+  = FireDrop RainDrop
+  | QueueDrop WebAudioTime RainDrop
+  | ScheduleDrops WebAudioTime
   | SliderChange Sliders.Msg
   | ToggleOnOff
   | VisibilityChange Bool
@@ -49,37 +54,40 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Drop startTime pan ->
+    FireDrop rainDrop ->
       ( model
       , if model.on then
-          raindropPort ( startTime
-                       , model.sliders.decayTime.value
-                       , pan
-                       --, { x = 0, y = 0, z = 3}
-                       )
+          rainDropPort rainDrop
         else
           Cmd.none
       )
 
-    GenerateDrop tickTime ->
-      ( model
-      , Random.generate (Drop tickTime) randVector3Gen
+    QueueDrop timerTick rainDrop ->
+      ( { model | rainDropQueue = queueNextDrop rainDrop model.rainDropQueue }
+      , Cmd.none
       )
+        :> update (ScheduleDrops timerTick)
 
     ScheduleDrops timerTick ->
-      let
-        drops = List.map GenerateDrop <|
-                    Schedule.drops timerTick model.nextDropTime model
-      in
-        case List.head drops of
-          Just (GenerateDrop startTime) ->
-            sequence update drops ( { model | nextDropTime = startTime }
-                                  , Cmd.none
-                                  )
-          _ ->
+      case model.rainDropQueue of
+        nextDrop :: rest ->
+          if withinLookahead timerTick nextDrop.startTime model then
+            ( { model | rainDropQueue = rest }
+            --, rainDropGenerator nextDrop model.timeConst
+            , rainDropGenerator nextDrop model.sliders.rainIntensity.value
+                model.sliders.decayTime.value
+                |> Random.generate (QueueDrop timerTick)
+            )
+              :> update (FireDrop nextDrop)
+          else
             ( model
             , Cmd.none
             )
+              
+        [] ->
+          ( model
+          , Cmd.none
+          )
 
     SliderChange slidersMsg ->
       let
@@ -156,7 +164,32 @@ init =
     ( Model
         initSliders
         True
-        0
+        [ { channel = 0
+          , decayTime = 1
+          , startTime = 1
+          , nextDropTime = 1.1
+          , pan = (Vector3 -5 0 0)
+          }
+        , { channel = 1
+          , decayTime = 1
+          , startTime = 2
+          , nextDropTime = 2.1
+          , pan = (Vector3 2 0 0)
+          }
+        , { channel = 2
+          , decayTime = 1
+          , startTime = 3
+          , nextDropTime = 3.1
+          , pan = (Vector3 2 0 0)
+          }
+        , { channel = 3
+          , decayTime = 1
+          , startTime = 4
+          , nextDropTime = 4.1
+          , pan = (Vector3 5 0 0)
+          }
+        ]
+        20
         True
         { height = 800, width = 400 }
     , Cmd.batch [ Cmd.map SliderChange initSlidersCmd

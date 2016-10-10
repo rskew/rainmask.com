@@ -37,7 +37,8 @@ wetGain.connect(masterGain);
 // Create the noise buffers
 
 noiseBuffers = createNoiseBuffers();
-backgroundNoiseBuffers = createBackgroundNoiseBuffers();
+
+backgroundNoiseBuffers = createBackgroundNoiseBuffer();
 
 var backgroundNoise = audioContext.createBufferSource();
     
@@ -52,7 +53,35 @@ backgroundNoise.connect(backgroundNoiseGain);
 backgroundNoiseGain.connect(mainBusGain);
 
 
-function newDrop (startTime, decayTime, pan) {
+
+//// Change to model of enveloping running streams rather than generating new nodes
+//var nStreams = 4;
+//    noiseStreams = []
+//
+//for (var i=0; i<nStreams; i++) {
+//    var noiseNode = audioContext.createBufferSource();
+//    noiseNode.buffer = createNoiseBuffer();
+//    noiseNode.loop = true;
+//    noiseNode.start(0);
+//
+//    var noiseGain = audioContext.createGain(0);
+//    var noisePan = audioContext.createPanner();
+//
+//    noiseGain.gain.setValueAtTime(0, audioContext.currentTime);
+//
+//    noiseNode.connect(noiseGain);
+//    noiseGain.connect(noisePan);
+//    noisePan.connect(mainBusGain);
+//
+//
+//    noiseStreams[i] = { bufferNode: noiseNode,
+//                        gainNode: noiseGain,
+//                        panNode: noisePan };
+//};
+//
+//
+//var cycleCount = 0;
+function newDrop (startTime, decayTime, pan, channel) {
 
     var raindrop = audioContext.createBufferSource();
 
@@ -60,23 +89,41 @@ function newDrop (startTime, decayTime, pan) {
     raindrop.buffer = noiseBuffers[buf];
     raindrop.loop = true;
 
+  //var nStreams = Math.floor( Math.random() * noiseStreams.length );
+  ////var streamNum = cycleCount % nStreams;
+  //var streamNum = channel;
+
+    var buf = Math.floor( Math.random() * noiseBuffers.length );
+
+  ////var stream = noiseStreams[nStream];
+
+
     var startOffset = Math.random();
     raindrop.start(startTime, startOffset);
 
     var dropGain = audioContext.createGain(0);
 
     var dropPan = audioContext.createPanner();
+
+  //noiseStreams[streamNum].panNode.setPosition(pan.x, pan.y, pan.z);
+
     dropPan.setPosition(pan.x, pan.y, pan.z);
 
     raindrop.connect(dropGain);
     dropGain.connect(dropPan);
     dropPan.connect(mainBusGain);
 
+  ////noiseStreams[streamNum].gainNode.gain.cancelScheduledValues(startTime);
+
+  //noiseStreams[streamNum].gainNode.gain.setValueAtTime(1, startTime);
+  //noiseStreams[streamNum].gainNode.gain.exponentialRampToValueAtTime(1e-10, startTime + decayTime);
+  //cycleCount += 1;
+
     dropGain.gain.setValueAtTime(1, startTime);
     dropGain.gain.exponentialRampToValueAtTime(1e-10, startTime + decayTime);
 
     raindrop.stop(startTime + decayTime);
-}
+};
 
 
 app.ports.backgroundNoiseLevelPort.subscribe(function (backgroundNoiseLevel) {
@@ -116,12 +163,8 @@ app.ports.masterVolumePort.subscribe(function (masterVolume) {
 });
 
 
-app.ports.raindropPort.subscribe(function (args) {
-    var startTime = args[0];
-    var decayTime = args[1];
-    var pan = args[2];
-
-    newDrop (startTime, decayTime, pan);
+app.ports.rainDropPort.subscribe(function (rainDrop) {
+    newDrop (rainDrop.startTime, rainDrop.decayTime, rainDrop.pan, rainDrop.channel);
 });
 
 

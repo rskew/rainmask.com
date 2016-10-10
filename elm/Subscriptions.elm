@@ -2,7 +2,7 @@ port module Subscriptions exposing (subscriptions)
 
 import Model exposing (Model)
 import Update exposing (Msg (..))
-import Utils exposing ( WATime
+import Utils exposing ( WebAudioTime
                       , JSTime
                       )
 
@@ -11,7 +11,7 @@ import Window
 
 --import Time exposing (millisecond)
 
-port timerPort : (JSTime -> msg) -> Sub msg
+port timerPort : (WebAudioTime -> msg) -> Sub msg
 
 port visibilityPort : (Bool -> msg) -> Sub msg
 
