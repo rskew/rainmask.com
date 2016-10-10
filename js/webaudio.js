@@ -50,7 +50,7 @@ var backgroundNoiseGain = audioContext.createGain(0);
 backgroundNoiseGain.gain.setValueAtTime(0, audioContext.currentTime);
 
 backgroundNoise.connect(backgroundNoiseGain);
-backgroundNoiseGain.connect(mainBusGain);
+backgroundNoiseGain.connect(masterGain);
 
 
 
