@@ -9761,7 +9761,7 @@ var _user$project$Sliders$init = function (size) {
 	var _p13 = _user$project$Slider$initialise(
 		{
 			name: 'Rain Intensity',
-			value: 30,
+			value: 10,
 			max: 200,
 			min: 1,
 			updateCommand: function (n) {
