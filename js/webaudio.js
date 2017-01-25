@@ -177,6 +177,7 @@ if (typeof(timerWorker) == "undefined") {
 timerWorker.postMessage(1000./4);
 timerWorker.addEventListener('message', function (e) {
     app.ports.timerPort.send(audioContext.currentTime);
+    //document.getElementById("debug1").innerHTML = audioContext.currentTime;
 });
 
 

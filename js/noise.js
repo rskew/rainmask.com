@@ -11,10 +11,8 @@ function createNoiseBuffers () {
             lastOut = 0.0;
         for (var i = 0; i < bufferSize; i++) {
             var white = Math.random() * 2 - 1;
-            output[i] = (lastOut + ((0.001 * buf) * white)) /
-                                     (1.00 + 0.001 * buf);
-            output[i] = (lastOut + (0.080 * white)) /
-                                     (1.00 + 0.080);
+            output[i] = (lastOut + ((0.01 * buf) * white)) /
+                                     (1.00 + 0.01 * buf);
             lastOut = output[i];
             output[i] *= 3.5; // (roughly) compensate for gain
         }
