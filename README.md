@@ -1,4 +1,5 @@
-# [rainmask.com](rainmask.com)
+**rainmask.com**
+
 Rain sound generator
 
 ---
