@@ -1,4 +1,4 @@
-**[rainmask.com](www.rainmask.com)**
+**[rainmask.com](http://rainmask.com)**
 
 Rain sound generator
 
